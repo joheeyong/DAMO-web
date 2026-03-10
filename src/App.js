@@ -59,49 +59,67 @@ function App() {
     fetchUsers();
   }, []);
 
+  const isHealthy = health && health.status !== 'ERROR';
+
   return (
     <div className="App">
-      <h1>DAMO</h1>
+      <div className="header">
+        <img src="/favicon.svg" alt="DAMO" />
+        <h1>DAMO</h1>
+      </div>
 
-      <section>
-        <h2>Server Health</h2>
+      <div className="card">
+        <h2>Server Status</h2>
         {health ? (
-          <pre>{JSON.stringify(health, null, 2)}</pre>
+          <>
+            <div className="health-status">
+              <div className={`health-dot ${isHealthy ? '' : 'error'}`} />
+              <span>{isHealthy ? 'Connected' : 'Disconnected'}</span>
+            </div>
+            <pre>{JSON.stringify(health, null, 2)}</pre>
+          </>
         ) : (
           <p>Loading...</p>
         )}
-      </section>
+      </div>
 
-      <section>
+      <div className="card">
         <h2>Add User</h2>
-        <input
-          placeholder="Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <input
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <button onClick={createUser}>Create</button>
-      </section>
+        <div className="form-row">
+          <input
+            placeholder="Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+          <input
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <button onClick={createUser}>Create</button>
+        </div>
+      </div>
 
-      <section>
+      <div className="card">
         <h2>Users ({users.length})</h2>
         {users.length === 0 ? (
-          <p>No users yet.</p>
+          <p className="empty-state">No users yet.</p>
         ) : (
-          <ul>
+          <ul className="user-list">
             {users.map((user) => (
-              <li key={user.id}>
-                {user.name} ({user.email})
-                <button onClick={() => deleteUser(user.id)}>Delete</button>
+              <li key={user.id} className="user-item">
+                <div className="user-info">
+                  <span className="user-name">{user.name}</span>
+                  <span className="user-email">{user.email}</span>
+                </div>
+                <button className="delete-btn" onClick={() => deleteUser(user.id)}>
+                  Delete
+                </button>
               </li>
             ))}
           </ul>
         )}
-      </section>
+      </div>
     </div>
   );
 }
