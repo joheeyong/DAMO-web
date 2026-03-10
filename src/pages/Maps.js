@@ -21,8 +21,10 @@ function Maps() {
       const { naver } = window;
       if (!naver || !mapRef.current) return;
 
+      const defaultCenter = new naver.maps.LatLng(37.5665, 126.978);
+
       const map = new naver.maps.Map(mapRef.current, {
-        center: new naver.maps.LatLng(37.5665, 126.978),  // 서울 시청
+        center: defaultCenter,
         zoom: 14,
         mapTypeControl: true,
         zoomControl: true,
@@ -31,10 +33,32 @@ function Maps() {
         },
       });
 
-      new naver.maps.Marker({
-        position: new naver.maps.LatLng(37.5665, 126.978),
+      const marker = new naver.maps.Marker({
+        position: defaultCenter,
         map: map,
+        icon: {
+          url: '/favicon.svg',
+          size: new naver.maps.Size(40, 40),
+          scaledSize: new naver.maps.Size(40, 40),
+          anchor: new naver.maps.Point(20, 20),
+        },
       });
+
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const userLatLng = new naver.maps.LatLng(
+              position.coords.latitude,
+              position.coords.longitude
+            );
+            map.setCenter(userLatLng);
+            marker.setPosition(userLatLng);
+          },
+          (error) => {
+            console.warn('Geolocation failed:', error.message);
+          }
+        );
+      }
     };
 
     document.head.appendChild(script);
