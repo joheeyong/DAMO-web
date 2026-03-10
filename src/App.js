@@ -116,7 +116,7 @@ function App() {
         </div>
 
         <footer className="footer">
-          <p>&copy; 2026 DAMO. All rights reserved.</p>
+          <p>&copy; 2026 DAMO. All rights reserved. | Made with passion</p>
         </footer>
       </div>
     </div>
