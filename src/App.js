@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 
-const API_URL = 'http://54.180.179.231:8080';
+const API_URL = '';
 
 function App() {
   const [health, setHealth] = useState(null);
