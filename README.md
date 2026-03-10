@@ -1,70 +1,58 @@
-# Getting Started with Create React App
+# DAMO Web
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+React 기반 DAMO 서비스 웹 프론트엔드
 
-## Available Scripts
+## 기술 스택
 
-In the project directory, you can run:
+- **Framework**: React 18
+- **배포**: Vercel
+- **백엔드 연동**: Vercel Rewrites (프록시)
 
-### `npm start`
+## URL
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **Production**: https://damo-web.vercel.app
+- **Backend API**: http://54.180.179.231:8080
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 주요 기능
 
-### `npm test`
+- 서버 상태 확인 (Health Check)
+- 유저 CRUD (생성, 조회, 삭제)
+- 반응형 UI (PC / 태블릿 / 모바일)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 프로젝트 구조
 
-### `npm run build`
+```
+src/
+├── App.js          # 메인 컴포넌트 (API 연동, UI)
+├── App.css         # 반응형 스타일
+└── index.js        # 엔트리포인트
+public/
+├── favicon.svg     # ㄷㅁ 로고 아이콘
+├── index.html      # HTML 템플릿
+└── manifest.json   # PWA 매니페스트
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 로컬 실행
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```bash
+npm install
+npm start
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+http://localhost:3000 에서 확인 가능
 
-### `npm run eject`
+## 배포
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Vercel CLI로 수동 배포:
+```bash
+vercel --prod
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## API 프록시
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+`vercel.json`에서 Vercel Rewrites를 통해 HTTPS → HTTP 프록시 처리:
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+| 웹 요청 | 실제 호출 |
+|---------|----------|
+| `/health` | `http://54.180.179.231:8080/health` |
+| `/api/*` | `http://54.180.179.231:8080/api/*` |
