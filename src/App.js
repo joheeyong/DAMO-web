@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { Routes, Route } from 'react-router-dom';
 import './App.css';
+import Maps from './pages/Maps';
 
-function App() {
+function Landing() {
   const [days, setDays] = useState(0);
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
@@ -120,6 +122,15 @@ function App() {
         </footer>
       </div>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Landing />} />
+      <Route path="/maps" element={<Maps />} />
+    </Routes>
   );
 }
 

@@ -7,6 +7,10 @@
     {
       "source": "/health",
       "destination": "http://54.180.179.231:8080/health"
+    },
+    {
+      "source": "/((?!api|health).*)",
+      "destination": "/index.html"
     }
   ]
 }
