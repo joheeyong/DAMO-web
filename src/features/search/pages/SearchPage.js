@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { searchAll, fetchTrending, setActiveFilter, FILTERS } from '../slice/searchSlice';
+import { searchAll, fetchTrending, setActiveFilter, clearSearch, FILTERS } from '../slice/searchSlice';
 import FeedCard from '../components/FeedCard';
 import './SearchPage.css';
 
@@ -32,7 +32,11 @@ function SearchPage() {
     <div className="search-page">
       <header className="search-header">
         <div className="search-header-inner">
-          <h1 className="search-logo">DAMO</h1>
+          <h1 className="search-logo" onClick={() => {
+            setInputValue('');
+            dispatch(clearSearch());
+            dispatch(fetchTrending());
+          }}>DAMO</h1>
           <form className="search-bar" onSubmit={handleSearch}>
             <input
               type="text"
