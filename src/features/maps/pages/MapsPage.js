@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useNaverMap } from '../hooks/useNaverMap';
 import './MapsPage.css';
