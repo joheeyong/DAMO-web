@@ -10,4 +10,7 @@ export const searchApi = {
     apiClient.get(
       `/api/search/all?query=${encodeURIComponent(query)}&display=${display}`
     ),
+
+  trending: (display = 10) =>
+    apiClient.get(`/api/search/trending?display=${display}`),
 };

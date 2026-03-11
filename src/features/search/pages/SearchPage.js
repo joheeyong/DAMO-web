@@ -1,15 +1,21 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { searchAll, searchMore, setActiveTab, CATEGORIES } from '../slice/searchSlice';
-import SearchResultCard from '../components/SearchResultCard';
+import { searchAll, fetchTrending, setActiveFilter, FILTERS } from '../slice/searchSlice';
+import FeedCard from '../components/FeedCard';
 import './SearchPage.css';
 
 function SearchPage() {
   const dispatch = useDispatch();
-  const { query, activeTab, results, loading, moreLoading } = useSelector(
+  const { query, activeFilter, items, loading, trendingLoaded } = useSelector(
     (state) => state.search
   );
   const [inputValue, setInputValue] = useState('');
+
+  useEffect(() => {
+    if (!trendingLoaded && !query) {
+      dispatch(fetchTrending());
+    }
+  }, [dispatch, trendingLoaded, query]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -17,19 +23,10 @@ function SearchPage() {
     dispatch(searchAll({ query: inputValue.trim() }));
   };
 
-  const activeResult = results[activeTab];
-  const items = activeResult?.items || [];
-  const total = activeResult?.total || 0;
-
-  const handleLoadMore = () => {
-    dispatch(
-      searchMore({
-        category: activeTab,
-        query,
-        start: items.length + 1,
-      })
-    );
-  };
+  const filteredItems =
+    activeFilter === 'all'
+      ? items
+      : items.filter((item) => item.platform === activeFilter);
 
   return (
     <div className="search-page">
@@ -51,78 +48,54 @@ function SearchPage() {
         </div>
       </header>
 
-      {query && (
-        <div className="search-tabs">
-          <div className="tabs-inner">
-            {CATEGORIES.map((cat) => {
-              const count = results[cat.key]?.total;
-              return (
-                <button
-                  key={cat.key}
-                  className={`tab ${activeTab === cat.key ? 'active' : ''}`}
-                  onClick={() => dispatch(setActiveTab(cat.key))}
-                >
-                  {cat.label}
-                  {count !== undefined && (
-                    <span className="tab-count">
-                      {count > 999 ? '999+' : count}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
+      <div className="search-filters">
+        <div className="filters-inner">
+          {FILTERS.map((f) => {
+            const count =
+              f.key === 'all'
+                ? items.length
+                : items.filter((i) => i.platform === f.key).length;
+            if (f.key !== 'all' && count === 0) return null;
+            return (
+              <button
+                key={f.key}
+                className={`filter-chip ${activeFilter === f.key ? 'active' : ''}`}
+                onClick={() => dispatch(setActiveFilter(f.key))}
+              >
+                {f.label}
+                {count > 0 && <span className="filter-count">{count}</span>}
+              </button>
+            );
+          })}
         </div>
-      )}
+      </div>
 
-      <main className="search-results">
+      <main className="search-feed">
         {loading && (
           <div className="search-loading">
             <div className="spinner" />
-            <p>검색중...</p>
+            <p>콘텐츠를 불러오는 중...</p>
           </div>
         )}
 
-        {!loading && query && items.length === 0 && (
+        {!loading && !query && items.length > 0 && (
+          <div className="trending-header">
+            <h2>추천 피드</h2>
+            <p>지금 인기 있는 콘텐츠</p>
+          </div>
+        )}
+
+        {!loading && query && filteredItems.length === 0 && (
           <div className="search-empty">
             <p>'{query}' 검색 결과가 없습니다.</p>
           </div>
         )}
 
-        {!loading && items.length > 0 && (
-          <>
-            <div className="results-info">
-              <span>약 {total.toLocaleString()}개 결과</span>
-            </div>
-
-            <div className={`results-grid ${activeTab === 'image' ? 'image-grid' : ''}`}>
-              {items.map((item, idx) => (
-                <SearchResultCard key={idx} category={activeTab} item={item} />
-              ))}
-            </div>
-
-            {items.length < total && (
-              <button
-                className="load-more-btn"
-                onClick={handleLoadMore}
-                disabled={moreLoading}
-              >
-                {moreLoading ? '불러오는 중...' : '더보기'}
-              </button>
-            )}
-          </>
-        )}
-
-        {!query && !loading && (
-          <div className="search-welcome">
-            <img src="/favicon.svg" alt="DAMO" className="welcome-logo" />
-            <h2>다모</h2>
-            <p>여러 플랫폼의 콘텐츠를 한 번에 검색하세요</p>
-            <div className="welcome-tags">
-              {CATEGORIES.map((cat) => (
-                <span key={cat.key} className="welcome-tag">{cat.label}</span>
-              ))}
-            </div>
+        {!loading && filteredItems.length > 0 && (
+          <div className="feed-grid">
+            {filteredItems.map((item) => (
+              <FeedCard key={item.id} item={item} />
+            ))}
           </div>
         )}
       </main>
