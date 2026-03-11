@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { searchAll, fetchTrending, setActiveFilter, clearSearch, FILTERS } from '../slice/searchSlice';
+import { analytics, logEvent } from '../../../core/firebase';
 import FeedCard from '../components/FeedCard';
 import './SearchPage.css';
 
@@ -17,9 +18,14 @@ function SearchPage() {
     }
   }, [dispatch, trendingLoaded, query]);
 
+  useEffect(() => {
+    logEvent(analytics, 'page_view', { page_title: 'Search', page_path: '/search' });
+  }, []);
+
   const handleSearch = (e) => {
     e.preventDefault();
     if (!inputValue.trim()) return;
+    logEvent(analytics, 'search', { search_term: inputValue.trim() });
     dispatch(searchAll({ query: inputValue.trim() }));
   };
 
@@ -64,7 +70,10 @@ function SearchPage() {
               <button
                 key={f.key}
                 className={`filter-chip ${activeFilter === f.key ? 'active' : ''}`}
-                onClick={() => dispatch(setActiveFilter(f.key))}
+                onClick={() => {
+                  logEvent(analytics, 'select_filter', { filter: f.key });
+                  dispatch(setActiveFilter(f.key));
+                }}
               >
                 {f.label}
                 {count > 0 && <span className="filter-count">{count}</span>}

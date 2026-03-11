@@ -8,6 +8,7 @@ React 기반 DAMO 서비스 웹 프론트엔드
 - **State Management**: Redux Toolkit
 - **배포**: Vercel (GitHub 연동 자동배포)
 - **백엔드 연동**: Vercel Rewrites (프록시)
+- **Analytics**: Firebase Analytics (GA4)
 - **IDE**: VS Code
 
 ## URL
@@ -29,8 +30,9 @@ React 기반 DAMO 서비스 웹 프론트엔드
 ```
 src/
 ├── core/
-│   └── api/
-│       └── apiClient.js         # 공통 HTTP 클라이언트
+│   ├── api/
+│   │   └── apiClient.js         # 공통 HTTP 클라이언트
+│   └── firebase.js              # Firebase 초기화 + Analytics
 ├── features/
 │   ├── landing/
 │   │   └── pages/               # Coming Soon 랜딩 페이지
@@ -74,6 +76,16 @@ http://localhost:3000 에서 확인 가능
 |---------|----------|
 | `/health` | `http://54.180.179.231:8080/health` |
 | `/api/*` | `http://54.180.179.231:8080/api/*` |
+
+## Firebase Analytics
+
+- **Firebase 프로젝트**: damo-app-2026
+- **Measurement ID**: G-HQ4S4HNBCD
+- **추적 이벤트**:
+  - `page_view` — 검색 페이지 진입
+  - `search` — 검색 실행 (search_term 포함)
+  - `select_filter` — 필터 칩 클릭
+  - `select_content` — 피드 카드 클릭 (platform, item_id 포함)
 
 ## 관련 레포지토리
 

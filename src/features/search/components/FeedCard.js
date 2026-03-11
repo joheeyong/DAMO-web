@@ -1,3 +1,4 @@
+import { analytics, logEvent } from '../../../core/firebase';
 import './FeedCard.css';
 
 const PLATFORM_LABELS = {
@@ -25,6 +26,10 @@ function FeedCard({ item }) {
       target="_blank"
       rel="noopener noreferrer"
       className={`feed-card ${isYoutube ? 'feed-card-youtube' : ''}`}
+      onClick={() => logEvent(analytics, 'select_content', {
+        content_type: item.platform,
+        item_id: item.id,
+      })}
     >
       {isYoutube && hasImage && (
         <div className="feed-thumbnail-wrap">
