@@ -26,7 +26,12 @@ function normalizeItems(rawResults) {
 
   for (const [category, raw] of Object.entries(rawResults)) {
     if (category === 'keyword') continue;
-    const data = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    let data;
+    try {
+      data = typeof raw === 'string' ? JSON.parse(raw) : raw;
+    } catch {
+      continue;
+    }
 
     if (category === 'youtube') {
       const ytItems = data.items || [];
