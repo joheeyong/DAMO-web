@@ -11,11 +11,13 @@ const PLATFORM_LABELS = {
   kin: { label: '지식iN', color: '#03c75a' },
   book: { label: '도서', color: '#f59e0b' },
   webkr: { label: '웹', color: '#6b7280' },
+  reddit: { label: 'Reddit', color: '#ff4500' },
 };
 
 function FeedCard({ item }) {
   const platform = PLATFORM_LABELS[item.platform] || { label: item.platform, color: '#6b7280' };
   const isYoutube = item.platform === 'youtube';
+  const isReddit = item.platform === 'reddit';
   const isShop = item.platform === 'shop';
   const isBook = item.platform === 'book';
   const hasImage = !!item.image;
@@ -53,7 +55,16 @@ function FeedCard({ item }) {
             {isShop && item.extra?.price && (
               <p className="feed-price">{Number(item.extra.price).toLocaleString()}원</p>
             )}
+            {isReddit && item.extra?.subreddit && (
+              <p className="feed-subreddit">{item.extra.subreddit}</p>
+            )}
             {!isShop && <p className="feed-desc">{item.description}</p>}
+            {isReddit && (
+              <div className="feed-reddit-stats">
+                <span>▲ {item.extra?.score?.toLocaleString()}</span>
+                <span>💬 {item.extra?.numComments?.toLocaleString()}</span>
+              </div>
+            )}
             <div className="feed-meta">
               {item.author && <span>{item.author}</span>}
               {item.date && <span>{item.date}</span>}

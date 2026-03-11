@@ -12,6 +12,7 @@ const FILTERS = [
   { key: 'kin', label: '지식iN' },
   { key: 'book', label: '도서' },
   { key: 'webkr', label: '웹문서' },
+  { key: 'reddit', label: 'Reddit' },
 ];
 
 export { FILTERS };
@@ -41,6 +42,31 @@ function normalizeItems(rawResults) {
           author: snippet.channelTitle || '',
           date: snippet.publishedAt?.substring(0, 10) || '',
           extra: item.statistics || null,
+        });
+      });
+    } else if (category === 'reddit') {
+      const children = data.data?.children || [];
+      children.forEach((child) => {
+        const post = child.data || {};
+        if (post.stickied) return;
+        const thumbnail =
+          post.thumbnail && post.thumbnail !== 'self' && post.thumbnail !== 'default' && post.thumbnail !== 'nsfw'
+            ? post.thumbnail
+            : '';
+        items.push({
+          id: `reddit-${post.id}`,
+          platform: 'reddit',
+          title: post.title || '',
+          description: post.selftext?.substring(0, 200) || '',
+          link: `https://www.reddit.com${post.permalink}`,
+          image: thumbnail,
+          author: post.author || '',
+          date: post.created_utc ? new Date(post.created_utc * 1000).toISOString().substring(0, 10) : '',
+          extra: {
+            subreddit: post.subreddit_name_prefixed || '',
+            score: post.score || 0,
+            numComments: post.num_comments || 0,
+          },
         });
       });
     } else {

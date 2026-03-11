@@ -134,6 +134,22 @@
   color: rgba(255, 255, 255, 0.35);
 }
 
+/* Reddit */
+.feed-subreddit {
+  font-size: 0.78rem;
+  color: #ff6534;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.feed-reddit-stats {
+  display: flex;
+  gap: 12px;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.5);
+  margin-top: 4px;
+}
+
 /* Responsive */
 @media (max-width: 640px) {
   .feed-card-body {
