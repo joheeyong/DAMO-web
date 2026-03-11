@@ -15,9 +15,13 @@ React 기반 DAMO 서비스 웹 프론트엔드
 - **Production**: https://damo-web.vercel.app
 - **Backend API**: http://54.180.179.231:8080
 
-## 현재 상태
+## 페이지
 
-서비스 준비중 (Coming Soon) 랜딩 페이지
+| 경로 | 설명 |
+|------|------|
+| `/` | Coming Soon 랜딩 페이지 |
+| `/maps` | 네이버 지도 (현재 위치 표시) |
+| `/push` | FCM 푸시 알림 전송 관리 |
 
 ## 프로젝트 구조 (예정)
 

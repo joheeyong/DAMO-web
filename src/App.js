@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import './App.css';
 import Maps from './pages/Maps';
+import Push from './pages/Push';
 
 function Landing() {
   const [days, setDays] = useState(0);
@@ -130,6 +131,7 @@ function App() {
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/maps" element={<Maps />} />
+      <Route path="/push" element={<Push />} />
     </Routes>
   );
 }
