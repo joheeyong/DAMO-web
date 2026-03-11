@@ -21,7 +21,7 @@ React 기반 DAMO 서비스 웹 프론트엔드
 |------|------|
 | `/` | Coming Soon 랜딩 페이지 |
 | `/maps` | 네이버 지도 (현재 위치 표시) |
-| `/search` | 네이버 통합 검색 (블로그/뉴스/카페/쇼핑/이미지/지식iN/도서/웹) |
+| `/search` | 통합 검색 피드 (네이버+유튜브 혼합, 검색어 없으면 추천 피드) |
 | `/push` | FCM 푸시 알림 전송 관리 |
 
 ## 프로젝트 구조
@@ -38,10 +38,10 @@ src/
 │   │   ├── hooks/               # useNaverMap 커스텀 훅
 │   │   └── pages/               # 네이버 지도 페이지
 │   ├── search/
-│   │   ├── api/                 # 검색 API 호출
-│   │   ├── slice/               # Redux 검색 상태 관리
-│   │   ├── components/          # 검색 결과 카드 컴포넌트
-│   │   └── pages/               # 통합 검색 페이지
+│   │   ├── api/                 # 검색 API 호출 (네이버+유튜브)
+│   │   ├── slice/               # Redux 검색 상태 관리 + 통합 피드 정규화
+│   │   ├── components/          # FeedCard (플랫폼별 카드 렌더링)
+│   │   └── pages/               # 통합 검색 피드 페이지
 │   └── push/
 │       ├── api/                 # FCM API 호출
 │       ├── slice/               # Redux Toolkit slice (상태 관리)
