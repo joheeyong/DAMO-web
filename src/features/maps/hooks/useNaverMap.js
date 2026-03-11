@@ -1,13 +1,8 @@
-import { useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './Maps.css';
+import { useEffect } from 'react';
 
 const NAVER_CLIENT_ID = process.env.REACT_APP_NAVER_MAP_CLIENT_ID;
 
-function Maps() {
-  const mapRef = useRef(null);
-  const navigate = useNavigate();
-
+export function useNaverMap(mapRef) {
   useEffect(() => {
     if (!NAVER_CLIENT_ID) {
       console.error('Naver Map Client ID is not set');
@@ -66,19 +61,5 @@ function Maps() {
     return () => {
       document.head.removeChild(script);
     };
-  }, []);
-
-  return (
-    <div className="maps-page">
-      <div className="maps-header">
-        <button className="back-btn" onClick={() => navigate('/')}>
-          &larr; Back
-        </button>
-        <h1>DAMO Maps</h1>
-      </div>
-      <div ref={mapRef} className="map-container" />
-    </div>
-  );
+  }, [mapRef]);
 }
-
-export default Maps;

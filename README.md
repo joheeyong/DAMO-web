@@ -5,7 +5,7 @@ React 기반 DAMO 서비스 웹 프론트엔드
 ## 기술 스택
 
 - **Framework**: React 18
-- **State Management**: Redux Toolkit (예정)
+- **State Management**: Redux Toolkit
 - **배포**: Vercel (GitHub 연동 자동배포)
 - **백엔드 연동**: Vercel Rewrites (프록시)
 - **IDE**: VS Code
@@ -23,28 +23,28 @@ React 기반 DAMO 서비스 웹 프론트엔드
 | `/maps` | 네이버 지도 (현재 위치 표시) |
 | `/push` | FCM 푸시 알림 전송 관리 |
 
-## 프로젝트 구조 (예정)
+## 프로젝트 구조
 
 ```
 src/
-├── core/              # API 클라이언트, 공통 유틸
+├── core/
+│   └── api/
+│       └── apiClient.js         # 공통 HTTP 클라이언트
 ├── features/
-│   ├── auth/          # 로그인/회원가입
-│   │   ├── api/
-│   │   ├── hooks/
-│   │   ├── components/
-│   │   └── pages/
-│   └── user/
-│       ├── api/
-│       ├── hooks/
-│       ├── components/
-│       └── pages/
-├── shared/            # 공통 컴포넌트, 레이아웃
-└── store/             # Redux Toolkit store
-public/
-├── favicon.svg        # ㄷㅁ 로고 아이콘
-├── index.html         # HTML 템플릿
-└── manifest.json      # PWA 매니페스트
+│   ├── landing/
+│   │   └── pages/               # Coming Soon 랜딩 페이지
+│   ├── maps/
+│   │   ├── hooks/               # useNaverMap 커스텀 훅
+│   │   └── pages/               # 네이버 지도 페이지
+│   └── push/
+│       ├── api/                 # FCM API 호출
+│       ├── slice/               # Redux Toolkit slice (상태 관리)
+│       └── pages/               # 푸시 알림 전송 페이지
+├── shared/                      # 공통 컴포넌트 (예정)
+├── store/
+│   └── index.js                 # Redux Store 설정
+├── App.js                       # 라우팅
+└── index.js                     # Provider + 앱 진입점
 ```
 
 ## 로컬 실행

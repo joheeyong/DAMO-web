@@ -1,63 +1,41 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './Push.css';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchTokens, sendNotification, clearSendResult } from '../slice/pushSlice';
+import './PushPage.css';
 
-function Push() {
+function PushPage() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { tokens, sendLoading, sendResult } = useSelector((state) => state.push);
+
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
-  const [tokens, setTokens] = useState([]);
   const [selectedToken, setSelectedToken] = useState('all');
-  const [result, setResult] = useState('');
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetchTokens();
-  }, []);
+    dispatch(fetchTokens());
+  }, [dispatch]);
 
-  const fetchTokens = async () => {
-    try {
-      const res = await fetch('/api/fcm/tokens');
-      const data = await res.json();
-      setTokens(data);
-    } catch (e) {
-      console.error('Failed to fetch tokens:', e);
+  useEffect(() => {
+    if (sendResult?.status === 'OK') {
+      setTitle('');
+      setBody('');
     }
-  };
+  }, [sendResult]);
 
-  const handleSend = async (e) => {
+  const handleSend = (e) => {
     e.preventDefault();
     if (!title || !body) return;
-
-    setLoading(true);
-    setResult('');
-
-    try {
-      const payload = { title, body };
-      if (selectedToken !== 'all') {
-        payload.token = selectedToken;
-      }
-
-      const res = await fetch('/api/fcm/send', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-
-      if (data.status === 'OK') {
-        setResult(`전송 성공: ${data.result}`);
-        setTitle('');
-        setBody('');
-      } else {
-        setResult(`전송 실패: ${data.message}`);
-      }
-    } catch (e) {
-      setResult(`에러: ${e.message}`);
-    } finally {
-      setLoading(false);
-    }
+    dispatch(clearSendResult());
+    dispatch(sendNotification({ title, body, token: selectedToken }));
   };
+
+  const resultText = sendResult
+    ? sendResult.status === 'OK'
+      ? `전송 성공: ${sendResult.result}`
+      : `전송 실패: ${sendResult.message}`
+    : '';
 
   return (
     <div className="push-page">
@@ -66,7 +44,7 @@ function Push() {
           &larr; Back
         </button>
         <h1>Push Notification</h1>
-        <button className="refresh-btn" onClick={fetchTokens}>
+        <button className="refresh-btn" onClick={() => dispatch(fetchTokens())}>
           Refresh
         </button>
       </div>
@@ -123,13 +101,13 @@ function Push() {
             />
           </div>
 
-          <button type="submit" className="send-btn" disabled={loading}>
-            {loading ? '전송중...' : '푸시 알림 전송'}
+          <button type="submit" className="send-btn" disabled={sendLoading}>
+            {sendLoading ? '전송중...' : '푸시 알림 전송'}
           </button>
 
-          {result && (
-            <p className={`result ${result.includes('성공') ? 'success' : 'error'}`}>
-              {result}
+          {resultText && (
+            <p className={`result ${resultText.includes('성공') ? 'success' : 'error'}`}>
+              {resultText}
             </p>
           )}
         </form>
@@ -138,4 +116,4 @@ function Push() {
   );
 }
 
-export default Push;
+export default PushPage;
