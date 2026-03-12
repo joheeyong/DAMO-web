@@ -117,9 +117,14 @@ function FeedCard({ item }) {
     if (localStorage.getItem('auth_token')) {
       activityApi.recordClick(item.id, item.platform, item.sourceKeyword);
     }
-    // Flutter app + iframe-blocked site: navigate directly to mobile URL in WebView
-    if (isFlutterApp() && IFRAME_BLOCKED.includes(item.platform)) {
-      window.location.href = toMobileUrl(item.link);
+    // Flutter app: open content in a new native WebView page
+    if (isFlutterApp()) {
+      try {
+        window.DamoOpenContent?.postMessage(JSON.stringify({
+          url: toMobileUrl(item.link),
+          title: item.title || '',
+        }));
+      } catch (e) { /* fallback */ }
       return;
     }
     navigate('/content', { state: { item } });
