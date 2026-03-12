@@ -75,6 +75,12 @@
   font-weight: 600;
   cursor: pointer;
   flex-shrink: 0;
+  transition: transform 0.12s ease, opacity 0.15s ease;
+}
+
+.search-bar button:active {
+  transform: scale(0.93);
+  opacity: 0.85;
 }
 
 .search-bar button:disabled {
@@ -119,11 +125,17 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  transition: all 0.2s;
+  transition: transform 0.12s ease, background 0.15s ease;
 }
 
-.filter-chip:hover {
-  background: #e8e8ed;
+.filter-chip:active {
+  transform: scale(0.93);
+}
+
+@media (hover: hover) {
+  .filter-chip:hover {
+    background: #e8e8ed;
+  }
 }
 
 .filter-chip.active {

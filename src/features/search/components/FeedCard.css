@@ -6,14 +6,24 @@
   overflow: hidden;
   text-decoration: none;
   color: #1d1d1f;
-  transition: all 0.2s;
+  transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
 }
 
-.feed-card:hover {
-  background: #fafafa;
-  border-color: rgba(99, 102, 241, 0.3);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+.feed-card:active {
+  transform: scale(0.97);
+  background: #f5f5f7;
+}
+
+@media (hover: hover) {
+  .feed-card:hover {
+    background: #fafafa;
+    border-color: rgba(99, 102, 241, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  }
+  .feed-card:hover:active {
+    transform: scale(0.97);
+  }
 }
 
 /* YouTube card */

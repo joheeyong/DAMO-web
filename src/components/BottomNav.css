@@ -30,8 +30,12 @@
   background: none;
   cursor: pointer;
   border-radius: 20px;
-  transition: all 0.2s;
+  transition: transform 0.12s ease, background 0.15s ease;
   font-family: inherit;
+}
+
+.bottom-nav-item:active {
+  transform: scale(0.9);
 }
 
 .bottom-nav-item span {
