@@ -161,6 +161,17 @@
   transition: top 0.2s ease;
 }
 
+.search-filters::before {
+  content: '';
+  position: absolute;
+  top: -50px;
+  left: 0;
+  right: 0;
+  height: 50px;
+  background: #fff;
+  z-index: -1;
+}
+
 .search-filters.filters-top {
   top: 0 !important;
 }
