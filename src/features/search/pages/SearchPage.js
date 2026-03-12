@@ -231,7 +231,7 @@ function SearchPage() {
             return (
               <button
                 key={f.key}
-                className={`filter-chip ${activeFilter === f.key ? 'active' : ''}`}
+                className={`filter-chip ${f.key === 'blog' ? 'filter-chip-nblog' : ''} ${activeFilter === f.key ? 'active' : ''}`}
                 onClick={() => {
                   logEvent(analytics, 'select_filter', { filter: f.key });
                   dispatch(setActiveFilter(f.key));

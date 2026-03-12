@@ -225,6 +225,22 @@
   align-self: center;
 }
 
+.filter-chip-nblog {
+  background: rgba(3, 199, 90, 0.1);
+  border-color: rgba(3, 199, 90, 0.3);
+  color: #03c75a;
+}
+
+.filter-chip-nblog.active {
+  background: #03c75a;
+  border-color: #03c75a;
+  color: #fff;
+}
+
+.filter-chip-nblog.active .filter-count {
+  background: rgba(255, 255, 255, 0.25);
+}
+
 .filter-chip-interest {
   background: rgba(99, 102, 241, 0.06);
   border-color: rgba(99, 102, 241, 0.2);
