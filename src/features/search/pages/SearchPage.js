@@ -25,7 +25,23 @@ function SearchPage() {
   );
   const { user } = useSelector((state) => state.auth);
   const [inputValue, setInputValue] = useState('');
+  const [headerHidden, setHeaderHidden] = useState(false);
   const observerRef = useRef(null);
+  const lastScrollY = useRef(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentY = window.scrollY;
+      if (currentY > lastScrollY.current && currentY > 60) {
+        setHeaderHidden(true);
+      } else if (currentY < lastScrollY.current) {
+        setHeaderHidden(false);
+      }
+      lastScrollY.current = currentY;
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     if (!trendingLoaded && !query) {
@@ -89,7 +105,7 @@ function SearchPage() {
 
   return (
     <div className="search-page">
-      <header className="search-header">
+      <header className={`search-header ${headerHidden ? 'header-hidden' : ''}`}>
         <div className="search-header-inner">
           <h1 className="search-logo" onClick={() => {
             setInputValue('');
@@ -111,7 +127,7 @@ function SearchPage() {
         </div>
       </header>
 
-      <div className="search-filters">
+      <div className={`search-filters ${headerHidden ? 'filters-top' : ''}`}>
         <div className="filters-inner">
           {FILTERS.map((f) => {
             const count =
