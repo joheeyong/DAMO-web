@@ -2,8 +2,12 @@ const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || '';
 
 async function request(path, options = {}) {
   const url = `${API_BASE_URL}${path}`;
+  const token = localStorage.getItem('auth_token');
   const config = {
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     ...options,
   };
 

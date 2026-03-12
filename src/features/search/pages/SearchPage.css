@@ -145,7 +145,7 @@
   max-width: 700px;
   width: 100%;
   margin: 0 auto;
-  padding: 16px 20px 40px;
+  padding: 16px 20px 100px;
   box-sizing: border-box;
 }
 
@@ -282,7 +282,7 @@
   }
 
   .search-feed {
-    padding: 12px 14px 30px;
+    padding: 12px 14px 90px;
   }
 
   .trending-header h2 {
