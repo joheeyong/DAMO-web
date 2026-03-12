@@ -109,6 +109,10 @@ function ContentDetailPage() {
   const videoId = isVideo ? getVideoId(item) : null;
   const mobileLink = toMobileUrl(item.link, item.platform);
 
+  // Sites that block iframes (X-Frame-Options)
+  const IFRAME_BLOCKED = ['news', 'kin', 'cafe', 'shop', 'book', 'webkr'];
+  const useIframe = !IFRAME_BLOCKED.includes(item.platform);
+
   const handleBack = () => {
     if (window.history.length > 1) {
       navigate(-1);
@@ -221,7 +225,7 @@ function ContentDetailPage() {
         </a>
       </header>
 
-      {!iframeError ? (
+      {useIframe && !iframeError ? (
         <iframe
           ref={iframeRef}
           className="detail-iframe"
@@ -231,11 +235,28 @@ function ContentDetailPage() {
           onError={() => setIframeError(true)}
         />
       ) : (
-        <div className="detail-iframe-fallback">
-          <p>이 페이지는 앱 내에서 표시할 수 없습니다.</p>
-          <a href={mobileLink} target="_blank" rel="noopener noreferrer" className="detail-original-link">
-            원본 페이지로 이동
-          </a>
+        <div className="detail-preview">
+          {item.image && (
+            <div className="detail-preview-image-wrap">
+              <img src={item.image} alt="" className="detail-preview-image" />
+            </div>
+          )}
+          <div className="detail-preview-body">
+            <h1 className="detail-video-title">{item.title}</h1>
+            {item.description && (
+              <p className="detail-video-desc">{item.description}</p>
+            )}
+            <div className="detail-video-meta">
+              {item.author && <span className="detail-video-author">{item.author}</span>}
+              {item.date && <span className="detail-video-date">{item.date}</span>}
+            </div>
+            <a href={mobileLink} className="detail-open-btn" onClick={(e) => {
+              e.preventDefault();
+              window.location.href = mobileLink;
+            }}>
+              원본 페이지로 이동
+            </a>
+          </div>
         </div>
       )}
     </div>
