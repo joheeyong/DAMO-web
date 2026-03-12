@@ -27,9 +27,14 @@ function SearchPage() {
   const [inputValue, setInputValue] = useState('');
   const [headerHidden, setHeaderHidden] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
+  const [pullDistance, setPullDistance] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
   const headerRef = useRef(null);
   const observerRef = useRef(null);
   const lastScrollY = useRef(0);
+  const touchStartY = useRef(0);
+  const isPulling = useRef(false);
+  const PULL_THRESHOLD = 80;
 
   useEffect(() => {
     if (!headerRef.current) return;
@@ -62,6 +67,39 @@ function SearchPage() {
   useEffect(() => {
     logEvent(analytics, 'page_view', { page_title: 'Search', page_path: '/search' });
   }, []);
+
+  // Pull to refresh
+  const handleTouchStart = useCallback((e) => {
+    if (window.scrollY <= 0 && !refreshing) {
+      touchStartY.current = e.touches[0].clientY;
+      isPulling.current = true;
+    }
+  }, [refreshing]);
+
+  const handleTouchMove = useCallback((e) => {
+    if (!isPulling.current || refreshing) return;
+    const diff = e.touches[0].clientY - touchStartY.current;
+    if (diff > 0) {
+      // Dampen the pull distance for a rubber-band feel
+      setPullDistance(Math.min(diff * 0.4, 120));
+    }
+  }, [refreshing]);
+
+  const handleTouchEnd = useCallback(() => {
+    if (!isPulling.current) return;
+    isPulling.current = false;
+    if (pullDistance >= PULL_THRESHOLD && !refreshing) {
+      setRefreshing(true);
+      setPullDistance(60);
+      dispatch(clearSearch());
+      dispatch(fetchTrending()).finally(() => {
+        setRefreshing(false);
+        setPullDistance(0);
+      });
+    } else {
+      setPullDistance(0);
+    }
+  }, [pullDistance, refreshing, dispatch, PULL_THRESHOLD]);
 
   const lastItemRef = useCallback(
     (node) => {
@@ -114,7 +152,25 @@ function SearchPage() {
   }, [query, nonShortsItems.length, userName, userInterests.join(',')]);
 
   return (
-    <div className="search-page">
+    <div
+      className="search-page"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      {/* Pull to refresh indicator */}
+      <div
+        className={`pull-indicator ${refreshing ? 'refreshing' : ''} ${pullDistance >= PULL_THRESHOLD ? 'ready' : ''}`}
+        style={{ height: pullDistance, opacity: Math.min(pullDistance / PULL_THRESHOLD, 1) }}
+      >
+        <div className="pull-indicator-inner">
+          <svg className="pull-arrow" viewBox="0 0 24 24" width="22" height="22">
+            <path d="M12 4v12m0 0l-5-5m5 5l5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+          </svg>
+          <span className="pull-text">{refreshing ? '새로고침 중...' : pullDistance >= PULL_THRESHOLD ? '놓으면 새로고침' : '당겨서 새로고침'}</span>
+        </div>
+      </div>
+
       <header ref={headerRef} className={`search-header ${headerHidden ? 'header-hidden' : ''}`}>
         <div className="search-header-inner">
           <h1 className="search-logo" onClick={() => {
