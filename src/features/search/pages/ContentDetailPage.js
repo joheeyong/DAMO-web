@@ -250,10 +250,7 @@ function ContentDetailPage() {
               {item.author && <span className="detail-video-author">{item.author}</span>}
               {item.date && <span className="detail-video-date">{item.date}</span>}
             </div>
-            <a href={mobileLink} className="detail-open-btn" onClick={(e) => {
-              e.preventDefault();
-              window.location.href = mobileLink;
-            }}>
+            <a href={mobileLink} rel="noopener noreferrer" className="detail-open-btn">
               원본 페이지로 이동
             </a>
           </div>
