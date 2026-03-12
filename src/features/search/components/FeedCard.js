@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { analytics, logEvent } from '../../../core/firebase';
 import { activityApi } from '../api/activityApi';
+import { toMobileUrl, isFlutterApp, IFRAME_BLOCKED } from '../utils/mobileUrl';
 import './FeedCard.css';
 
 const PLATFORM_LABELS = {
@@ -115,6 +116,11 @@ function FeedCard({ item }) {
     });
     if (localStorage.getItem('auth_token')) {
       activityApi.recordClick(item.id, item.platform, item.sourceKeyword);
+    }
+    // Flutter app + iframe-blocked site: navigate directly to mobile URL in WebView
+    if (isFlutterApp() && IFRAME_BLOCKED.includes(item.platform)) {
+      window.location.href = toMobileUrl(item.link);
+      return;
     }
     navigate('/content', { state: { item } });
   };

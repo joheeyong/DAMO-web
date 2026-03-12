@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
+import { toMobileUrl, IFRAME_BLOCKED } from '../utils/mobileUrl';
 import './ContentDetailPage.css';
 
 const PLATFORM_LABELS = {
@@ -22,67 +23,6 @@ const PLATFORM_LABELS = {
   instagram: { label: 'Instagram', color: '#E1306C' },
 };
 
-function toMobileUrl(url, platform) {
-  if (!url) return url;
-  try {
-    const u = new URL(url);
-    // Naver blog
-    if (u.hostname === 'blog.naver.com') {
-      u.hostname = 'm.blog.naver.com';
-      return u.toString();
-    }
-    // Naver news
-    if (u.hostname === 'news.naver.com' || u.hostname === 'n.news.naver.com') {
-      u.hostname = 'm.news.naver.com';
-      return u.toString();
-    }
-    // Naver cafe
-    if (u.hostname === 'cafe.naver.com') {
-      u.hostname = 'm.cafe.naver.com';
-      return u.toString();
-    }
-    // Naver kin
-    if (u.hostname === 'kin.naver.com') {
-      u.hostname = 'm.kin.naver.com';
-      return u.toString();
-    }
-    // Naver shopping
-    if (u.hostname === 'search.shopping.naver.com') {
-      u.hostname = 'msearch.shopping.naver.com';
-      return u.toString();
-    }
-    // Naver book/webkr - keep original
-
-    // Kakao/Daum blog
-    if (u.hostname === 'blog.daum.net') {
-      u.hostname = 'm.blog.daum.net';
-      return u.toString();
-    }
-    // Kakao/Daum cafe
-    if (u.hostname === 'cafe.daum.net') {
-      u.hostname = 'm.cafe.daum.net';
-      return u.toString();
-    }
-    // Daum search results / web
-    if (u.hostname === 'search.daum.net') {
-      u.hostname = 'm.search.daum.net';
-      return u.toString();
-    }
-    // Tistory blogs (already mobile-responsive, but force mobile)
-    if (u.hostname.endsWith('.tistory.com') && !u.hostname.startsWith('m.')) {
-      // Tistory는 반응형이므로 그대로 유지
-    }
-    // Brunch (Kakao)
-    if (u.hostname === 'brunch.co.kr') {
-      u.hostname = 'm.brunch.co.kr';
-      return u.toString();
-    }
-  } catch {
-    // invalid URL, return as-is
-  }
-  return url;
-}
-
 function getVideoId(item) {
   if (item.platform === 'shorts') return item.id.replace('shorts-', '');
   return item.id.replace('yt-', '');
@@ -95,19 +35,9 @@ function ContentDetailPage() {
   const iframeRef = useRef(null);
   const [iframeError, setIframeError] = useState(false);
 
-  const isApp = /DAMO-App/i.test(navigator.userAgent);
-
   useEffect(() => {
-    if (!item) {
-      navigate('/search', { replace: true });
-      return;
-    }
-    // In Flutter app, iframe-blocked sites go directly to mobile URL
-    const blocked = ['news', 'kin', 'cafe', 'shop', 'book', 'webkr'];
-    if (isApp && blocked.includes(item.platform)) {
-      window.location.replace(toMobileUrl(item.link, item.platform));
-    }
-  }, [item, navigate, isApp]);
+    if (!item) navigate('/search', { replace: true });
+  }, [item, navigate]);
 
   if (!item) return null;
 
@@ -117,13 +47,8 @@ function ContentDetailPage() {
   const isVideo = isYoutube || isShorts;
   const isImage = item.platform === 'image' || item.platform === 'kakao-image';
   const videoId = isVideo ? getVideoId(item) : null;
-  const mobileLink = toMobileUrl(item.link, item.platform);
-
-  // Sites that block iframes (X-Frame-Options)
-  const IFRAME_BLOCKED = ['news', 'kin', 'cafe', 'shop', 'book', 'webkr'];
-  const isBlocked = IFRAME_BLOCKED.includes(item.platform);
-  const isFlutterApp = /DAMO-App/i.test(navigator.userAgent);
-  const useIframe = !isBlocked;
+  const mobileLink = toMobileUrl(item.link);
+  const useIframe = !IFRAME_BLOCKED.includes(item.platform);
 
   const handleBack = () => {
     if (window.history.length > 1) {
