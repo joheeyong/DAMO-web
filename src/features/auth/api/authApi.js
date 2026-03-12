@@ -8,4 +8,7 @@ export const authApi = {
     apiClient.post('/api/auth/naver', { code, state, redirectUri }),
 
   getMe: () => apiClient.get('/api/auth/me'),
+
+  updateInterests: (interests) =>
+    apiClient.put('/api/auth/interests', { interests }),
 };

@@ -19,6 +19,14 @@ export const naverLogin = createAsyncThunk(
   }
 );
 
+export const updateInterests = createAsyncThunk(
+  'auth/updateInterests',
+  async (interests) => {
+    await authApi.updateInterests(interests);
+    return interests;
+  }
+);
+
 export const fetchMe = createAsyncThunk(
   'auth/fetchMe',
   async (_, { rejectWithValue }) => {
@@ -73,6 +81,11 @@ const authSlice = createSlice({
       })
       .addCase(naverLogin.rejected, (state) => {
         state.loading = false;
+      })
+      .addCase(updateInterests.fulfilled, (state, action) => {
+        if (state.user) {
+          state.user.interests = action.payload.join(',');
+        }
       })
       .addCase(fetchMe.fulfilled, (state, action) => {
         state.user = action.payload;

@@ -135,12 +135,30 @@ let usedKeywords = [];
 
 export const fetchMoreTrending = createAsyncThunk(
   'search/fetchMoreTrending',
-  async () => {
-    if (usedKeywords.length >= VIRAL_KEYWORDS.length) {
+  async (_, { getState }) => {
+    const { auth } = getState();
+    const userInterests = auth.user?.interests
+      ? auth.user.interests.split(',').filter(Boolean)
+      : [];
+
+    // Merge: user interests first, then viral keywords
+    const pool = userInterests.length > 0
+      ? [...userInterests, ...VIRAL_KEYWORDS]
+      : VIRAL_KEYWORDS;
+
+    if (usedKeywords.length >= pool.length) {
       usedKeywords = [];
     }
-    const available = VIRAL_KEYWORDS.filter((k) => !usedKeywords.includes(k));
-    const keyword = available[Math.floor(Math.random() * available.length)];
+    const available = pool.filter((k) => !usedKeywords.includes(k));
+
+    // 70% chance to pick from user interests if available
+    let keyword;
+    const interestsAvailable = available.filter((k) => userInterests.includes(k));
+    if (interestsAvailable.length > 0 && Math.random() < 0.7) {
+      keyword = interestsAvailable[Math.floor(Math.random() * interestsAvailable.length)];
+    } else {
+      keyword = available[Math.floor(Math.random() * available.length)];
+    }
     usedKeywords.push(keyword);
 
     const raw = await searchApi.searchAll(keyword, 5);

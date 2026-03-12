@@ -22,4 +22,5 @@ async function request(path, options = {}) {
 export const apiClient = {
   get: (path) => request(path),
   post: (path, body) => request(path, { method: 'POST', body }),
+  put: (path, body) => request(path, { method: 'PUT', body }),
 };

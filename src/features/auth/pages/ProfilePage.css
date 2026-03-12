@@ -64,6 +64,119 @@
   margin-bottom: 32px;
 }
 
+/* Interests preview */
+.profile-interests-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.interest-preview-tag {
+  padding: 4px 10px;
+  background: rgba(99, 102, 241, 0.06);
+  color: #6366f1;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* Interests panel */
+.interests-panel {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+  text-align: left;
+}
+
+.interests-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1d1d1f;
+  margin-bottom: 4px;
+}
+
+.interests-subtitle {
+  font-size: 0.82rem;
+  color: #86868b;
+  margin-bottom: 16px;
+}
+
+.interests-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.interest-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 1.5px solid #e5e5e7;
+  background: #fff;
+  font-size: 0.85rem;
+  color: #1d1d1f;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.interest-chip:hover {
+  border-color: #c7c7cc;
+  background: #f9f9fb;
+}
+
+.interest-chip.selected {
+  border-color: #6366f1;
+  background: rgba(99, 102, 241, 0.08);
+  color: #6366f1;
+  font-weight: 600;
+}
+
+.interest-emoji {
+  font-size: 1rem;
+}
+
+.interests-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.interests-cancel {
+  padding: 10px 20px;
+  border: 1px solid #d1d1d6;
+  background: #fff;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  color: #6e6e73;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 500;
+}
+
+.interests-save {
+  padding: 10px 24px;
+  border: none;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border-radius: 12px;
+  font-size: 0.88rem;
+  color: #fff;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+}
+
+.interests-save:disabled {
+  opacity: 0.6;
+}
+
 .profile-menu {
   background: #fff;
   border-radius: 16px;
