@@ -95,7 +95,7 @@ function ProfilePage() {
 
         {user.provider && (
           <span className="profile-provider">
-            {user.provider === 'google' ? 'Google' : user.provider === 'naver' ? 'Naver' : user.provider} 계정
+            {user.provider === 'google' ? 'Google' : user.provider === 'naver' ? 'Naver' : user.provider === 'kakao' ? 'Kakao' : user.provider} 계정
           </span>
         )}
 

@@ -5,6 +5,7 @@ import './LoginPage.css';
 
 const GOOGLE_CLIENT_ID = '546301713753-tnosu460h0nsiirqs0uqfue1oa7tvldv.apps.googleusercontent.com';
 const NAVER_CLIENT_ID = 'MRyB2GQo4D7YUW_epid5';
+const KAKAO_CLIENT_ID = '17dff873debbf3988118d7b429c6ad99';
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -23,6 +24,15 @@ function LoginPage() {
       + `&scope=openid%20email%20profile`
       + `&access_type=offline`
       + `&prompt=consent`;
+    window.location.href = url;
+  };
+
+  const handleKakaoLogin = () => {
+    const redirectUri = window.location.origin + '/auth/kakao/callback';
+    const url = `https://kauth.kakao.com/oauth/authorize`
+      + `?client_id=${KAKAO_CLIENT_ID}`
+      + `&redirect_uri=${encodeURIComponent(redirectUri)}`
+      + `&response_type=code`;
     window.location.href = url;
   };
 
@@ -53,6 +63,13 @@ function LoginPage() {
               <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
             </svg>
             Google로 계속하기
+          </button>
+
+          <button className="login-btn kakao-btn" onClick={handleKakaoLogin}>
+            <svg className="login-btn-icon" viewBox="0 0 24 24">
+              <path d="M12 3C6.48 3 2 6.36 2 10.44c0 2.62 1.75 4.93 4.38 6.24l-1.12 4.16c-.1.36.3.65.6.44l4.97-3.3c.38.04.77.06 1.17.06 5.52 0 10-3.36 10-7.6C22 6.36 17.52 3 12 3z" fill="#3C1E1E"/>
+            </svg>
+            카카오로 계속하기
           </button>
 
           <button className="login-btn naver-btn" onClick={handleNaverLogin}>

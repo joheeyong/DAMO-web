@@ -27,6 +27,16 @@ export const naverLogin = createAsyncThunk(
   }
 );
 
+export const kakaoLogin = createAsyncThunk(
+  'auth/kakaoLogin',
+  async ({ code, redirectUri }) => {
+    const data = await authApi.loginWithKakao(code, redirectUri);
+    localStorage.setItem('auth_token', data.token);
+    notifyFlutterAuth(data.token);
+    return data;
+  }
+);
+
 export const updateInterests = createAsyncThunk(
   'auth/updateInterests',
   async (interests) => {
@@ -88,6 +98,17 @@ const authSlice = createSlice({
         state.user = action.payload.user;
       })
       .addCase(naverLogin.rejected, (state) => {
+        state.loading = false;
+      })
+      .addCase(kakaoLogin.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(kakaoLogin.fulfilled, (state, action) => {
+        state.loading = false;
+        state.token = action.payload.token;
+        state.user = action.payload.user;
+      })
+      .addCase(kakaoLogin.rejected, (state) => {
         state.loading = false;
       })
       .addCase(updateInterests.fulfilled, (state, action) => {

@@ -10,6 +10,7 @@ import PrivacyPage from './features/legal/pages/PrivacyPage';
 import LoginPage from './features/auth/pages/LoginPage';
 import OAuthCallbackPage from './features/auth/pages/OAuthCallbackPage';
 import NaverCallbackPage from './features/auth/pages/NaverCallbackPage';
+import KakaoCallbackPage from './features/auth/pages/KakaoCallbackPage';
 import ProfilePage from './features/auth/pages/ProfilePage';
 import OnboardingInterestsPage from './features/auth/pages/OnboardingInterestsPage';
 import BottomNav from './components/BottomNav';
@@ -44,6 +45,7 @@ function App() {
         <Route path="/onboarding/interests" element={<OnboardingInterestsPage />} />
         <Route path="/auth/google/callback" element={<OAuthCallbackPage />} />
         <Route path="/auth/naver/callback" element={<NaverCallbackPage />} />
+        <Route path="/auth/kakao/callback" element={<KakaoCallbackPage />} />
       </Routes>
       {showNav && <BottomNav />}
     </>

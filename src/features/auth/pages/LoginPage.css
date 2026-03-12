@@ -72,6 +72,15 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
+.kakao-btn {
+  background: #FEE500;
+  color: #3C1E1E;
+}
+
+.kakao-btn:hover {
+  background: #F0D800;
+}
+
 .naver-btn {
   background: #03c75a;
   color: #fff;

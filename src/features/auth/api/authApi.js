@@ -7,6 +7,9 @@ export const authApi = {
   loginWithNaver: (code, state, redirectUri) =>
     apiClient.post('/api/auth/naver', { code, state, redirectUri }),
 
+  loginWithKakao: (code, redirectUri) =>
+    apiClient.post('/api/auth/kakao', { code, redirectUri }),
+
   getMe: () => apiClient.get('/api/auth/me'),
 
   updateInterests: (interests) =>
