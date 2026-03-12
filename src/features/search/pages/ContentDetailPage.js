@@ -52,6 +52,31 @@ function toMobileUrl(url, platform) {
       return u.toString();
     }
     // Naver book/webkr - keep original
+
+    // Kakao/Daum blog
+    if (u.hostname === 'blog.daum.net') {
+      u.hostname = 'm.blog.daum.net';
+      return u.toString();
+    }
+    // Kakao/Daum cafe
+    if (u.hostname === 'cafe.daum.net') {
+      u.hostname = 'm.cafe.daum.net';
+      return u.toString();
+    }
+    // Daum search results / web
+    if (u.hostname === 'search.daum.net') {
+      u.hostname = 'm.search.daum.net';
+      return u.toString();
+    }
+    // Tistory blogs (already mobile-responsive, but force mobile)
+    if (u.hostname.endsWith('.tistory.com') && !u.hostname.startsWith('m.')) {
+      // Tistory는 반응형이므로 그대로 유지
+    }
+    // Brunch (Kakao)
+    if (u.hostname === 'brunch.co.kr') {
+      u.hostname = 'm.brunch.co.kr';
+      return u.toString();
+    }
   } catch {
     // invalid URL, return as-is
   }
