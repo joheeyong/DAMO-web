@@ -1,17 +1,23 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { analytics, logEvent } from '../../../core/firebase';
+import { activityApi } from '../api/activityApi';
 import './FeedCard.css';
 
 const PLATFORM_LABELS = {
   youtube: { label: 'YouTube', color: '#ff0000' },
-  blog: { label: '블로그', color: '#03c75a' },
-  news: { label: '뉴스', color: '#4a90d9' },
-  cafe: { label: '카페', color: '#03c75a' },
-  shop: { label: '쇼핑', color: '#00b493' },
-  image: { label: '이미지', color: '#a855f7' },
+  blog: { label: 'N 블로그', color: '#03c75a' },
+  news: { label: 'N 뉴스', color: '#03c75a' },
+  cafe: { label: 'N 카페', color: '#03c75a' },
+  shop: { label: 'N 쇼핑', color: '#00b493' },
+  image: { label: 'N 이미지', color: '#03c75a' },
   kin: { label: '지식iN', color: '#03c75a' },
-  book: { label: '도서', color: '#f59e0b' },
-  webkr: { label: '웹', color: '#6b7280' },
+  book: { label: 'N 도서', color: '#03c75a' },
+  webkr: { label: 'N 웹', color: '#03c75a' },
+  'kakao-blog': { label: 'D 블로그', color: '#FEE500', textColor: '#3C1E1E' },
+  'kakao-cafe': { label: 'D 카페', color: '#FEE500', textColor: '#3C1E1E' },
+  'kakao-web': { label: 'D 웹', color: '#FEE500', textColor: '#3C1E1E' },
+  'kakao-video': { label: 'D 영상', color: '#FEE500', textColor: '#3C1E1E' },
+  'kakao-image': { label: 'D 이미지', color: '#FEE500', textColor: '#3C1E1E' },
   reddit: { label: 'Reddit', color: '#ff4500' },
   shorts: { label: 'Shorts', color: '#ff0000' },
   instagram: { label: 'Instagram', color: '#E1306C' },
@@ -105,10 +111,15 @@ function FeedCard({ item }) {
       target="_blank"
       rel="noopener noreferrer"
       className={`feed-card ${isYoutube ? 'feed-card-youtube' : ''} ${isShorts ? 'feed-card-shorts' : ''}`}
-      onClick={() => logEvent(analytics, 'select_content', {
-        content_type: item.platform,
-        item_id: item.id,
-      })}
+      onClick={() => {
+        logEvent(analytics, 'select_content', {
+          content_type: item.platform,
+          item_id: item.id,
+        });
+        if (localStorage.getItem('auth_token')) {
+          activityApi.recordClick(item.id, item.platform, item.sourceKeyword);
+        }
+      }}
     >
       {isShorts && hasImage && (
         <VideoPreview item={item} isShorts={true} />
@@ -129,7 +140,7 @@ function FeedCard({ item }) {
             className={`feed-image ${isBook ? 'feed-image-book' : ''}`}
           />
           <div className="feed-text">
-            <div className="feed-badge" style={{ background: platform.color }}>
+            <div className="feed-badge" style={{ background: platform.color, color: platform.textColor || '#fff' }}>
               {platform.label}
             </div>
             <h3 className="feed-title">{item.title}</h3>
@@ -156,7 +167,7 @@ function FeedCard({ item }) {
 
       {!isVideo && !hasImage && (
         <div className="feed-text-only">
-          <div className="feed-badge" style={{ background: platform.color }}>
+          <div className="feed-badge" style={{ background: platform.color, color: platform.textColor || '#fff' }}>
             {platform.label}
           </div>
           <h3 className="feed-title">{item.title}</h3>
@@ -170,7 +181,7 @@ function FeedCard({ item }) {
 
       {isShorts && (
         <div className="feed-shorts-info">
-          <div className="feed-badge" style={{ background: platform.color }}>
+          <div className="feed-badge" style={{ background: platform.color, color: platform.textColor || '#fff' }}>
             {platform.label}
           </div>
           <h3 className="feed-title">{item.title}</h3>
@@ -182,7 +193,7 @@ function FeedCard({ item }) {
 
       {isYoutube && (
         <div className="feed-yt-info">
-          <div className="feed-badge" style={{ background: platform.color }}>
+          <div className="feed-badge" style={{ background: platform.color, color: platform.textColor || '#fff' }}>
             {platform.label}
           </div>
           <h3 className="feed-title">{item.title}</h3>

@@ -113,16 +113,28 @@
 }
 
 .search-bar button {
-  padding: 11px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
   background: linear-gradient(135deg, #6366f1, #8b5cf6);
   color: #fff;
   border: none;
   border-radius: 12px;
-  font-size: 0.9rem;
-  font-weight: 600;
   cursor: pointer;
   flex-shrink: 0;
   transition: transform 0.12s ease, opacity 0.15s ease;
+}
+
+.spinner-small {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
 }
 
 .search-bar button:active {
@@ -367,8 +379,8 @@
   }
 
   .search-bar button {
-    padding: 10px 16px;
-    font-size: 0.85rem;
+    width: 36px;
+    height: 36px;
   }
 
   .filters-inner {

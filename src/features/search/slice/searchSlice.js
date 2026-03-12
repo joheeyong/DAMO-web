@@ -1,18 +1,24 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { searchApi } from '../api/searchApi';
+import { activityApi } from '../api/activityApi';
 
 const FILTERS = [
   { key: 'all', label: '전체' },
   { key: 'shorts', label: 'Shorts' },
   { key: 'youtube', label: '유튜브' },
-  { key: 'blog', label: '블로그' },
-  { key: 'news', label: '뉴스' },
-  { key: 'cafe', label: '카페' },
-  { key: 'shop', label: '쇼핑' },
-  { key: 'image', label: '이미지' },
+  { key: 'blog', label: 'N 블로그' },
+  { key: 'news', label: 'N 뉴스' },
+  { key: 'cafe', label: 'N 카페' },
+  { key: 'shop', label: 'N 쇼핑' },
+  { key: 'image', label: 'N 이미지' },
   { key: 'kin', label: '지식iN' },
-  { key: 'book', label: '도서' },
-  { key: 'webkr', label: '웹문서' },
+  { key: 'book', label: 'N 도서' },
+  { key: 'webkr', label: 'N 웹' },
+  { key: 'kakao-blog', label: 'D 블로그' },
+  { key: 'kakao-cafe', label: 'D 카페' },
+  { key: 'kakao-web', label: 'D 웹' },
+  { key: 'kakao-video', label: 'D 영상' },
+  { key: 'kakao-image', label: 'D 이미지' },
   { key: 'reddit', label: 'Reddit' },
   { key: 'instagram', label: 'Instagram' },
 ];
@@ -74,6 +80,21 @@ function normalizeItems(rawResults) {
           },
         });
       });
+    } else if (category.startsWith('kakao-')) {
+      const docs = data.documents || [];
+      docs.forEach((doc, idx) => {
+        items.push({
+          id: `${category}-${idx}-${doc.url}`,
+          platform: category,
+          title: doc.title?.replace(/<[^>]*>/g, '') || '',
+          description: (doc.contents || doc.title || '').replace(/<[^>]*>/g, '').substring(0, 200),
+          link: doc.url || '',
+          image: doc.thumbnail_url || doc.thumbnail || '',
+          author: doc.blogname || doc.cafename || '',
+          date: doc.datetime ? doc.datetime.substring(0, 10) : '',
+          extra: null,
+        });
+      });
     } else if (category === 'reddit') {
       const children = data.data?.children || [];
       children.forEach((child) => {
@@ -130,11 +151,35 @@ function normalizeItems(rawResults) {
   return items;
 }
 
+async function applyRanking(items) {
+  const token = localStorage.getItem('auth_token');
+  if (!token || items.length === 0) return items;
+  try {
+    const result = await activityApi.rankItems(items);
+    if (result.rankedIds && result.rankedIds.length > 0) {
+      const idOrder = new Map(result.rankedIds.map((id, idx) => [id, idx]));
+      return [...items].sort((a, b) => (idOrder.get(a.id) ?? 999) - (idOrder.get(b.id) ?? 999));
+    }
+  } catch (e) {
+    // Ranking failed — use original order
+  }
+  return items;
+}
+
 export const searchAll = createAsyncThunk(
   'search/searchAll',
   async ({ query, display = 5 }) => {
     const raw = await searchApi.searchAll(query, display);
-    return { query, items: normalizeItems(raw) };
+    let items = normalizeItems(raw);
+
+    // Record search & apply ranking for logged-in users
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      activityApi.recordSearch(query);
+      items = await applyRanking(items);
+    }
+
+    return { query, items };
   }
 );
 
@@ -200,7 +245,9 @@ export const fetchTrending = createAsyncThunk(
       }
     }
 
-    return { items: [...nonShorts, ...allShorts], keyword: trendingRaw.keyword || '' };
+    const allItems = [...nonShorts, ...allShorts];
+    const rankedItems = await applyRanking(allItems);
+    return { items: rankedItems, keyword: trendingRaw.keyword || '' };
   }
 );
 
@@ -242,7 +289,8 @@ export const fetchMoreTrending = createAsyncThunk(
 
     // searchAll already includes shorts — no extra API calls needed
     const raw = await searchApi.searchAll(keyword, 5);
-    const items = normalizeItems(raw);
+    let items = normalizeItems(raw);
+    items = await applyRanking(items);
     return { items };
   }
 );

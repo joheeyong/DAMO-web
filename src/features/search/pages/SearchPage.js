@@ -72,6 +72,15 @@ function SearchPage() {
     logEvent(analytics, 'page_view', { page_title: 'Search', page_path: '/search' });
   }, []);
 
+  // Notify Flutter when content is ready
+  useEffect(() => {
+    if (!loading && items.length > 0) {
+      try {
+        window.DamoReady?.postMessage('ready');
+      } catch (e) { /* not in Flutter WebView */ }
+    }
+  }, [loading, items.length]);
+
   // Pull to refresh
   const handleTouchStart = useCallback((e) => {
     if (window.scrollY <= 0 && !refreshing) {
@@ -193,8 +202,15 @@ function SearchPage() {
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
             />
-            <button type="submit" disabled={loading}>
-              {loading ? '...' : '검색'}
+            <button type="submit" disabled={loading} aria-label="검색">
+              {loading ? (
+                <div className="spinner-small" />
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8" />
+                  <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                </svg>
+              )}
             </button>
           </form>
         </div>
