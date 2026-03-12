@@ -34,6 +34,7 @@
 ### 인증
 - Google OAuth 2.0
 - Naver OAuth 2.0
+- Kakao OAuth 2.0
 - JWT 토큰 기반 세션 관리
 - 회원가입 시 관심사 온보딩 (건너뛰기 가능)
 
@@ -69,9 +70,10 @@ src/
 │   │   ├── api/authApi.js           # 로그인/회원정보 API
 │   │   ├── slice/authSlice.js       # Auth Redux (login, logout, interests)
 │   │   └── pages/
-│   │       ├── LoginPage.js         # 로그인 (Google + Naver)
+│   │       ├── LoginPage.js         # 로그인 (Google + Kakao + Naver)
 │   │       ├── OAuthCallbackPage.js # Google OAuth 콜백
 │   │       ├── NaverCallbackPage.js # Naver OAuth 콜백
+│   │       ├── KakaoCallbackPage.js # Kakao OAuth 콜백
 │   │       ├── OnboardingInterestsPage.js  # 가입 후 관심사 선택
 │   │       └── ProfilePage.js       # 프로필 + 관심사 관리
 │   ├── search/
@@ -79,12 +81,16 @@ src/
 │   │   │   ├── searchApi.js         # 검색/트렌딩 API
 │   │   │   └── activityApi.js       # 활동 추적/추천 랭킹 API
 │   │   ├── slice/searchSlice.js     # Search Redux (검색, 트렌딩, 인피니티 스크롤, 개인화 랭킹)
+│   │   ├── utils/
+│   │   │   └── mobileUrl.js         # 모바일 URL 변환 + 앱 감지
 │   │   ├── components/
-│   │   │   ├── FeedCard.js          # 피드 카드 (클릭 추적 포함)
+│   │   │   ├── FeedCard.js          # 피드 카드 (클릭 추적, 앱 내 콘텐츠 오버레이)
 │   │   │   └── FeedCard.css
 │   │   └── pages/
 │   │       ├── SearchPage.js        # 메인 검색/피드 페이지
-│   │       └── SearchPage.css
+│   │       ├── SearchPage.css
+│   │       ├── ContentDetailPage.js # 콘텐츠 상세 (YouTube 임베드, 이미지 뷰어, iframe)
+│   │       └── ContentDetailPage.css
 │   ├── landing/                     # 랜딩 페이지
 │   ├── legal/                       # 이용약관, 개인정보처리방침
 │   ├── maps/                        # 지도
@@ -116,11 +122,37 @@ src/
 | `/login` | LoginPage | 로그인 |
 | `/profile` | ProfilePage | 내 정보 |
 | `/onboarding/interests` | OnboardingInterestsPage | 가입 후 관심사 |
+| `/content` | ContentDetailPage | 콘텐츠 상세 (YouTube/이미지/iframe) |
 | `/auth/google/callback` | OAuthCallbackPage | Google 콜백 |
 | `/auth/naver/callback` | NaverCallbackPage | Naver 콜백 |
+| `/auth/kakao/callback` | KakaoCallbackPage | Kakao 콜백 |
 | `/maps` | MapsPage | 지도 |
 | `/terms` | TermsPage | 이용약관 |
 | `/privacy` | PrivacyPage | 개인정보처리방침 |
+
+## 콘텐츠 상세 페이지
+
+콘텐츠 클릭 시 플랫폼별 최적화된 상세 뷰를 제공합니다.
+
+| 콘텐츠 유형 | 웹 브라우저 | Flutter 앱 |
+|---|---|---|
+| YouTube / Shorts | 임베드 플레이어 + 메타 정보 | 임베드 플레이어 + 메타 정보 |
+| 이미지 (N/D) | 자체 이미지 뷰어 | 자체 이미지 뷰어 |
+| 블로그 (iframe 허용) | DAMO 헤더 + iframe | 네이티브 오버레이 WebView |
+| 뉴스/카페/쇼핑 등 (iframe 차단) | 프리뷰 카드 + 원본 링크 | 네이티브 오버레이 WebView |
+
+### 모바일 URL 자동 변환
+- `blog.naver.com` → `m.blog.naver.com`
+- `news.naver.com` → `m.news.naver.com`
+- `cafe.naver.com` → `m.cafe.naver.com`
+- `blog.daum.net` → `m.blog.daum.net`
+- `cafe.daum.net` → `m.cafe.daum.net`
+- `brunch.co.kr` → `m.brunch.co.kr`
+
+### Flutter 앱 연동
+- Flutter `NavigationDelegate`가 외부 URL 이동을 가로챔
+- 오버레이 WebView로 콘텐츠를 로드 (메인 WebView 상태 유지)
+- 뒤로가기 시 오버레이만 닫히고 검색 목록 그대로 복귀
 
 ## 로컬 실행
 
