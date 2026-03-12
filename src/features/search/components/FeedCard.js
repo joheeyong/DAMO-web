@@ -130,9 +130,12 @@ function FeedCard({ item }) {
     navigate('/content', { state: { item } });
   };
 
+  const inApp = isFlutterApp();
+
   return (
     <a
-      href={item.link}
+      href={inApp ? undefined : item.link}
+      role={inApp ? 'button' : undefined}
       className={`feed-card ${isYoutube ? 'feed-card-youtube' : ''} ${isShorts ? 'feed-card-shorts' : ''}`}
       onClick={handleClick}
     >
