@@ -17,7 +17,7 @@
   right: 0;
   z-index: 100;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  transition: transform 0.3s ease;
+  transition: transform 0.2s ease;
 }
 
 .search-header.header-hidden {
@@ -97,18 +97,17 @@
   background: #fff;
   border-bottom: 1px solid #e5e5e7;
   position: fixed;
-  top: 56px;
   left: 0;
   right: 0;
   z-index: 99;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  transition: top 0.3s ease;
+  transition: top 0.2s ease;
 }
 
 .search-filters.filters-top {
-  top: 0;
+  top: 0 !important;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
@@ -307,10 +306,6 @@
   .search-bar button {
     padding: 10px 16px;
     font-size: 0.85rem;
-  }
-
-  .search-filters {
-    top: 46px;
   }
 
   .filters-inner {
