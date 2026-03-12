@@ -125,87 +125,55 @@ export const fetchTrending = createAsyncThunk(
       ? auth.user.interests.split(',').filter(Boolean)
       : [];
 
-    // Always fetch trending
+    // Trending already includes shorts from YouTube API
     const trendingPromise = searchApi.trending(10);
 
-    // If user has interests, also search 2 random interest keywords
+    // Interest-based search (searchAll already includes shorts per keyword)
     let interestPromises = [];
-    if (userInterests.length > 0) {
-      const shuffled = [...userInterests].sort(() => Math.random() - 0.5);
-      const picks = shuffled.slice(0, Math.min(2, shuffled.length));
-      interestPromises = picks.map((kw) => searchApi.searchAll(kw, 5));
-    }
+    const shortsPool = userInterests.length > 0 ? userInterests : VIRAL_KEYWORDS;
+    const shuffled = [...shortsPool].sort(() => Math.random() - 0.5);
+    // Always search 2 keywords to get interest-based shorts + content
+    const picks = shuffled.slice(0, Math.min(2, shuffled.length));
+    interestPromises = picks.map((kw) => searchApi.searchAll(kw, 5).catch(() => ({})));
 
-    // Shorts: always fetch Korean shorts (interest keywords + viral for robustness)
-    const shortsPool = userInterests.length > 0
-      ? [...userInterests, ...VIRAL_KEYWORDS]
-      : VIRAL_KEYWORDS;
-    const shortsShuffled = [...shortsPool].sort(() => Math.random() - 0.5);
-    const shortsPicks = shortsShuffled.slice(0, Math.min(5, shortsShuffled.length));
-    const shortsPromises = shortsPicks.map((kw) =>
-      searchApi.searchByCategory('shorts', kw, 5).catch(() => null)
-    );
-
-    const [trendingRaw, ...rest] = await Promise.all([
+    const [trendingRaw, ...interestResults] = await Promise.all([
       trendingPromise,
       ...interestPromises,
-      ...shortsPromises,
     ]);
-
-    const interestResults = rest.slice(0, interestPromises.length);
-    const shortsResults = rest.slice(interestPromises.length);
 
     const trendingItems = normalizeItems(trendingRaw);
     const interestItems = interestResults.flatMap((raw) => normalizeItems(raw));
 
-    // Collect keyword shorts from all attempts
-    const keywordShorts = shortsResults.flatMap((raw) => {
-      if (!raw) return [];
-      try {
-        const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
-        return normalizeItems({ shorts: typeof parsed === 'string' ? parsed : JSON.stringify(parsed) });
-      } catch {
-        return [];
-      }
-    });
-    const seenShorts = new Set();
-    const uniqueKeywordShorts = keywordShorts.filter((s) => {
-      if (seenShorts.has(s.id)) return false;
-      seenShorts.add(s.id);
+    // Separate shorts from interest results
+    const interestShorts = interestItems.filter((i) => i.platform === 'shorts');
+    const interestNonShorts = interestItems.filter((i) => i.platform !== 'shorts');
+    const trendingShorts = trendingItems.filter((i) => i.platform === 'shorts');
+
+    // Combine shorts: interest shorts first, then trending shorts as supplement
+    const seenShortIds = new Set();
+    const allShorts = [...interestShorts, ...trendingShorts].filter((s) => {
+      if (seenShortIds.has(s.id)) return false;
+      seenShortIds.add(s.id);
       return true;
     });
 
-    // Merge: keyword shorts + trending shorts as fallback, always keep some
-    const trendingShorts = trendingItems.filter((i) => i.platform === 'shorts');
-    const allShorts = uniqueKeywordShorts.length > 0 ? uniqueKeywordShorts : trendingShorts;
-    // If keyword shorts exist but few, supplement with trending shorts
-    let finalShorts = [...allShorts];
-    if (uniqueKeywordShorts.length > 0 && uniqueKeywordShorts.length < 4) {
-      const extraIds = new Set(finalShorts.map((s) => s.id));
-      trendingShorts.forEach((s) => {
-        if (!extraIds.has(s.id)) finalShorts.push(s);
-      });
-    }
-    const finalItems = [...trendingItems.filter((i) => i.platform !== 'shorts'), ...finalShorts];
-
-    // Merge interest items (non-shorts)
-    const seenIds = new Set(finalItems.map((i) => i.id));
-    const uniqueInterestItems = interestItems.filter((i) => {
+    // Build non-shorts list: trending + interleave interest items
+    const trendingNonShorts = trendingItems.filter((i) => i.platform !== 'shorts');
+    const seenIds = new Set(trendingNonShorts.map((i) => i.id));
+    const uniqueInterestItems = interestNonShorts.filter((i) => {
       if (seenIds.has(i.id)) return false;
       seenIds.add(i.id);
       return true;
     });
 
-    // Interleave: insert interest items every 3rd position among non-shorts
-    const shorts = finalItems.filter((i) => i.platform === 'shorts');
-    const nonShorts = finalItems.filter((i) => i.platform !== 'shorts');
+    const nonShorts = [...trendingNonShorts];
     let insertIdx = 2;
     for (const item of uniqueInterestItems) {
       nonShorts.splice(insertIdx, 0, item);
       insertIdx += 3;
     }
 
-    return { items: [...nonShorts, ...shorts], keyword: trendingRaw.keyword || '' };
+    return { items: [...nonShorts, ...allShorts], keyword: trendingRaw.keyword || '' };
   }
 );
 
@@ -245,36 +213,9 @@ export const fetchMoreTrending = createAsyncThunk(
     }
     usedKeywords.push(keyword);
 
-    // Fetch main content + multiple shorts keywords for robustness
-    const shortsPool = userInterests.length > 0
-      ? [...userInterests, ...VIRAL_KEYWORDS]
-      : VIRAL_KEYWORDS;
-    const shortsShuffled = [...shortsPool].sort(() => Math.random() - 0.5);
-    const shortsPicks = shortsShuffled.slice(0, 3);
-
-    const [raw, ...shortsResults] = await Promise.all([
-      searchApi.searchAll(keyword, 5),
-      ...shortsPicks.map((kw) => searchApi.searchByCategory('shorts', kw, 3).catch(() => null)),
-    ]);
-    let items = normalizeItems(raw);
-
-    // Collect shorts from all keyword attempts
-    const kwShorts = shortsResults.flatMap((sr) => {
-      if (!sr) return [];
-      try {
-        const parsed = typeof sr === 'string' ? JSON.parse(sr) : sr;
-        return normalizeItems({ shorts: typeof parsed === 'string' ? parsed : JSON.stringify(parsed) });
-      } catch {
-        return [];
-      }
-    });
-    if (kwShorts.length > 0) {
-      const originalShorts = items.filter((i) => i.platform === 'shorts');
-      const seenIds = new Set(kwShorts.map((s) => s.id));
-      const extra = originalShorts.filter((s) => !seenIds.has(s.id));
-      items = [...items.filter((i) => i.platform !== 'shorts'), ...kwShorts, ...extra];
-    }
-
+    // searchAll already includes shorts — no extra API calls needed
+    const raw = await searchApi.searchAll(keyword, 5);
+    const items = normalizeItems(raw);
     return { items };
   }
 );
