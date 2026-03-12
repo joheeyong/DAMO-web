@@ -14,7 +14,14 @@ function OAuthCallbackPage() {
       const redirectUri = window.location.origin + '/auth/google/callback';
       dispatch(googleLogin({ code, redirectUri }))
         .unwrap()
-        .then(() => navigate('/search'))
+        .then((data) => {
+          const interests = data.user?.interests;
+          if (!interests) {
+            navigate('/onboarding/interests');
+          } else {
+            navigate('/search');
+          }
+        })
         .catch(() => navigate('/login'));
     } else {
       navigate('/login');

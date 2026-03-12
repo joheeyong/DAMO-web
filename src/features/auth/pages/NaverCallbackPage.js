@@ -15,7 +15,14 @@ function NaverCallbackPage() {
       const redirectUri = window.location.origin + '/auth/naver/callback';
       dispatch(naverLogin({ code, state, redirectUri }))
         .unwrap()
-        .then(() => navigate('/search'))
+        .then((data) => {
+          const interests = data.user?.interests;
+          if (!interests) {
+            navigate('/onboarding/interests');
+          } else {
+            navigate('/search');
+          }
+        })
         .catch(() => navigate('/login'));
     } else {
       navigate('/login');

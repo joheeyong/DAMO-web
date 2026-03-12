@@ -1,0 +1,139 @@
+.onboarding-page {
+  min-height: 100vh;
+  background: #f5f5f7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.onboarding-card {
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+}
+
+.onboarding-welcome {
+  margin-bottom: 32px;
+}
+
+.onboarding-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #1d1d1f;
+  margin-bottom: 8px;
+}
+
+.onboarding-desc {
+  font-size: 0.95rem;
+  color: #86868b;
+  line-height: 1.5;
+}
+
+.onboarding-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.onboarding-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 16px;
+  border-radius: 22px;
+  border: 1.5px solid #e5e5e7;
+  background: #fff;
+  font-size: 0.88rem;
+  color: #1d1d1f;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.onboarding-chip:hover {
+  border-color: #c7c7cc;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.onboarding-chip.selected {
+  border-color: #6366f1;
+  background: rgba(99, 102, 241, 0.08);
+  color: #6366f1;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
+}
+
+.onboarding-chip-emoji {
+  font-size: 1.1rem;
+}
+
+.onboarding-count {
+  font-size: 0.82rem;
+  color: #6366f1;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.onboarding-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.onboarding-save {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  transition: opacity 0.15s;
+}
+
+.onboarding-save:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.onboarding-skip {
+  width: 100%;
+  padding: 14px;
+  background: none;
+  color: #86868b;
+  border: none;
+  font-size: 0.92rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s;
+}
+
+.onboarding-skip:hover {
+  color: #1d1d1f;
+}
+
+.onboarding-hint {
+  font-size: 0.78rem;
+  color: #aeaeb2;
+}
+
+@media (max-width: 480px) {
+  .onboarding-title {
+    font-size: 1.3rem;
+  }
+
+  .onboarding-chip {
+    padding: 8px 12px;
+    font-size: 0.82rem;
+  }
+}

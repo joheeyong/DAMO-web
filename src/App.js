@@ -11,6 +11,7 @@ import LoginPage from './features/auth/pages/LoginPage';
 import OAuthCallbackPage from './features/auth/pages/OAuthCallbackPage';
 import NaverCallbackPage from './features/auth/pages/NaverCallbackPage';
 import ProfilePage from './features/auth/pages/ProfilePage';
+import OnboardingInterestsPage from './features/auth/pages/OnboardingInterestsPage';
 import BottomNav from './components/BottomNav';
 import { fetchMe } from './features/auth/slice/authSlice';
 
@@ -40,6 +41,7 @@ function App() {
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/onboarding/interests" element={<OnboardingInterestsPage />} />
         <Route path="/auth/google/callback" element={<OAuthCallbackPage />} />
         <Route path="/auth/naver/callback" element={<NaverCallbackPage />} />
       </Routes>
