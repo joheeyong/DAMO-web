@@ -130,18 +130,19 @@ export const fetchTrending = createAsyncThunk(
 
     // If user has interests, also search 2 random interest keywords
     let interestPromises = [];
-    let shortsPromises = [];
     if (userInterests.length > 0) {
       const shuffled = [...userInterests].sort(() => Math.random() - 0.5);
       const picks = shuffled.slice(0, Math.min(2, shuffled.length));
       interestPromises = picks.map((kw) => searchApi.searchAll(kw, 5));
-
-      // Shorts: fetch interest-based shorts separately (3 random keywords)
-      const shortsPicks = shuffled.slice(0, Math.min(3, shuffled.length));
-      shortsPromises = shortsPicks.map((kw) =>
-        searchApi.searchByCategory('shorts', kw, 5)
-      );
     }
+
+    // Shorts: always fetch Korean shorts (interest keywords or viral fallback)
+    const shortsPool = userInterests.length > 0 ? userInterests : VIRAL_KEYWORDS;
+    const shortsShuffled = [...shortsPool].sort(() => Math.random() - 0.5);
+    const shortsPicks = shortsShuffled.slice(0, Math.min(3, shortsShuffled.length));
+    const shortsPromises = shortsPicks.map((kw) =>
+      searchApi.searchByCategory('shorts', kw, 5)
+    );
 
     const [trendingRaw, ...rest] = await Promise.all([
       trendingPromise,
@@ -235,11 +236,10 @@ export const fetchMoreTrending = createAsyncThunk(
 
     const promises = [searchApi.searchAll(keyword, 5)];
 
-    // Also fetch interest-based shorts
-    if (userInterests.length > 0) {
-      const shortsKw = userInterests[Math.floor(Math.random() * userInterests.length)];
-      promises.push(searchApi.searchByCategory('shorts', shortsKw, 3));
-    }
+    // Always fetch Korean shorts (interest or viral fallback)
+    const shortsPool = userInterests.length > 0 ? userInterests : VIRAL_KEYWORDS;
+    const shortsKw = shortsPool[Math.floor(Math.random() * shortsPool.length)];
+    promises.push(searchApi.searchByCategory('shorts', shortsKw, 3));
 
     const [raw, shortsRaw] = await Promise.all(promises);
     let items = normalizeItems(raw);
