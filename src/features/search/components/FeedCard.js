@@ -109,8 +109,15 @@ function FeedCard({ item }) {
         item_id: item.id,
       })}
     >
-      {isVideo && hasImage && (
-        <VideoPreview item={item} isShorts={isShorts} />
+      {isShorts && hasImage && (
+        <VideoPreview item={item} isShorts={true} />
+      )}
+
+      {isYoutube && hasImage && (
+        <div className="feed-thumbnail-wrap">
+          <img src={item.image} alt="" className="feed-thumbnail" />
+          <div className="feed-play-icon">&#9654;</div>
+        </div>
       )}
 
       {!isVideo && hasImage && (
