@@ -18,5 +18,5 @@ export function toMobileUrl(url) {
 }
 
 export function isFlutterApp() {
-  return /DAMO-App/i.test(navigator.userAgent);
+  return !!window.DamoOpenContent;
 }
