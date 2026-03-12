@@ -9,6 +9,7 @@ import TermsPage from './features/legal/pages/TermsPage';
 import PrivacyPage from './features/legal/pages/PrivacyPage';
 import LoginPage from './features/auth/pages/LoginPage';
 import OAuthCallbackPage from './features/auth/pages/OAuthCallbackPage';
+import ProfilePage from './features/auth/pages/ProfilePage';
 import BottomNav from './components/BottomNav';
 import { fetchMe } from './features/auth/slice/authSlice';
 
@@ -37,6 +38,7 @@ function App() {
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
         <Route path="/auth/google/callback" element={<OAuthCallbackPage />} />
       </Routes>
       {showNav && <BottomNav />}
