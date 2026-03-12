@@ -218,8 +218,8 @@ function SearchPage() {
 
       <div
         ref={filterRef}
-        className={`search-filters ${headerHidden ? 'filters-top' : ''}`}
-        style={!headerHidden && headerHeight ? { top: headerHeight } : undefined}
+        className="search-filters"
+        style={{ transform: `translateY(${headerHidden ? 0 : headerHeight}px)` }}
       >
         <div className="filters-inner">
           {FILTERS.map((f) => {

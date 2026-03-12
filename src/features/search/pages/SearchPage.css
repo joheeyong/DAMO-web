@@ -152,28 +152,14 @@
   border-bottom: 1px solid #e5e5e7;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   position: fixed;
+  top: 0;
   left: 0;
   right: 0;
   z-index: 99;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
-  transition: top 0.2s ease;
-}
-
-.search-filters::before {
-  content: '';
-  position: absolute;
-  top: -50px;
-  left: 0;
-  right: 0;
-  height: 50px;
-  background: #fff;
-  z-index: -1;
-}
-
-.search-filters.filters-top {
-  top: 0 !important;
+  transition: transform 0.2s ease;
 }
 
 .search-filters::-webkit-scrollbar {
