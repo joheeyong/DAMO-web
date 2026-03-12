@@ -2,7 +2,6 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { analytics, logEvent } from '../../../core/firebase';
 import { activityApi } from '../api/activityApi';
-import { toMobileUrl, isFlutterApp, IFRAME_BLOCKED } from '../utils/mobileUrl';
 import './FeedCard.css';
 
 const PLATFORM_LABELS = {
@@ -108,6 +107,8 @@ function FeedCard({ item }) {
   const hasImage = !!item.image;
   const isVideo = isYoutube || isShorts;
 
+  const inApp = !!window.DamoReady; // Flutter WebView has DamoReady channel
+
   const handleClick = (e) => {
     e.preventDefault();
     logEvent(analytics, 'select_content', {
@@ -117,25 +118,17 @@ function FeedCard({ item }) {
     if (localStorage.getItem('auth_token')) {
       activityApi.recordClick(item.id, item.platform, item.sourceKeyword);
     }
-    // Flutter app: open content in a new native WebView page
-    if (isFlutterApp()) {
-      try {
-        window.DamoOpenContent?.postMessage(JSON.stringify({
-          url: toMobileUrl(item.link),
-          title: item.title || '',
-        }));
-      } catch (e) { /* fallback */ }
-      return;
+    if (inApp) {
+      // Trigger real navigation so Flutter's NavigationDelegate intercepts it
+      window.location.href = item.link;
+    } else {
+      navigate('/content', { state: { item } });
     }
-    navigate('/content', { state: { item } });
   };
-
-  const inApp = isFlutterApp();
 
   return (
     <a
-      href={inApp ? undefined : item.link}
-      role={inApp ? 'button' : undefined}
+      href={item.link}
       className={`feed-card ${isYoutube ? 'feed-card-youtube' : ''} ${isShorts ? 'feed-card-shorts' : ''}`}
       onClick={handleClick}
     >
