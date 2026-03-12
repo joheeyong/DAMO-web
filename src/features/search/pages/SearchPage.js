@@ -128,7 +128,6 @@ function SearchPage() {
               placeholder="검색어를 입력하세요"
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
-              autoFocus
             />
             <button type="submit" disabled={loading}>
               {loading ? '...' : '검색'}
@@ -162,6 +161,24 @@ function SearchPage() {
               </button>
             );
           })}
+          {userInterests.length > 0 && (
+            <>
+              <span className="filter-divider" />
+              {userInterests.map((interest) => (
+                <button
+                  key={`interest-${interest}`}
+                  className={`filter-chip filter-chip-interest ${query === interest ? 'active' : ''}`}
+                  onClick={() => {
+                    logEvent(analytics, 'select_filter', { filter: `interest:${interest}` });
+                    setInputValue(interest);
+                    dispatch(searchAll({ query: interest }));
+                  }}
+                >
+                  {interest}
+                </button>
+              ))}
+            </>
+          )}
         </div>
       </div>
 

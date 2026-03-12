@@ -163,6 +163,27 @@
   background: rgba(99, 102, 241, 0.15);
 }
 
+.filter-divider {
+  width: 1px;
+  height: 20px;
+  background: #d1d1d6;
+  flex-shrink: 0;
+  margin: 0 4px;
+  align-self: center;
+}
+
+.filter-chip-interest {
+  background: rgba(99, 102, 241, 0.06);
+  border-color: rgba(99, 102, 241, 0.2);
+  color: #6366f1;
+}
+
+.filter-chip-interest.active {
+  background: #6366f1;
+  border-color: #6366f1;
+  color: #fff;
+}
+
 /* Feed */
 .search-feed {
   flex: 1;
