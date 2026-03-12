@@ -10,6 +10,15 @@ export const googleLogin = createAsyncThunk(
   }
 );
 
+export const naverLogin = createAsyncThunk(
+  'auth/naverLogin',
+  async ({ code, state, redirectUri }) => {
+    const data = await authApi.loginWithNaver(code, state, redirectUri);
+    localStorage.setItem('auth_token', data.token);
+    return data;
+  }
+);
+
 export const fetchMe = createAsyncThunk(
   'auth/fetchMe',
   async (_, { rejectWithValue }) => {
@@ -52,6 +61,17 @@ const authSlice = createSlice({
         state.user = action.payload.user;
       })
       .addCase(googleLogin.rejected, (state) => {
+        state.loading = false;
+      })
+      .addCase(naverLogin.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(naverLogin.fulfilled, (state, action) => {
+        state.loading = false;
+        state.token = action.payload.token;
+        state.user = action.payload.user;
+      })
+      .addCase(naverLogin.rejected, (state) => {
         state.loading = false;
       })
       .addCase(fetchMe.fulfilled, (state, action) => {

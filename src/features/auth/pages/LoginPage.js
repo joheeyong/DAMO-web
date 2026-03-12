@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import './LoginPage.css';
 
 const GOOGLE_CLIENT_ID = '546301713753-tnosu460h0nsiirqs0uqfue1oa7tvldv.apps.googleusercontent.com';
-const REDIRECT_URI = window.location.origin + '/auth/google/callback';
+const NAVER_CLIENT_ID = 'MRyB2GQo4D7YUW_epid5';
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -15,13 +15,26 @@ function LoginPage() {
   }, [user, navigate]);
 
   const handleGoogleLogin = () => {
+    const redirectUri = window.location.origin + '/auth/google/callback';
     const url = `https://accounts.google.com/o/oauth2/v2/auth`
       + `?client_id=${GOOGLE_CLIENT_ID}`
-      + `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}`
+      + `&redirect_uri=${encodeURIComponent(redirectUri)}`
       + `&response_type=code`
       + `&scope=openid%20email%20profile`
       + `&access_type=offline`
       + `&prompt=consent`;
+    window.location.href = url;
+  };
+
+  const handleNaverLogin = () => {
+    const redirectUri = window.location.origin + '/auth/naver/callback';
+    const state = Math.random().toString(36).substring(2);
+    sessionStorage.setItem('naver_oauth_state', state);
+    const url = `https://nid.naver.com/oauth2.0/authorize`
+      + `?response_type=code`
+      + `&client_id=${NAVER_CLIENT_ID}`
+      + `&redirect_uri=${encodeURIComponent(redirectUri)}`
+      + `&state=${state}`;
     window.location.href = url;
   };
 
@@ -40,6 +53,13 @@ function LoginPage() {
               <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
             </svg>
             Google로 계속하기
+          </button>
+
+          <button className="login-btn naver-btn" onClick={handleNaverLogin}>
+            <svg className="login-btn-icon" viewBox="0 0 24 24">
+              <path d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z" fill="#fff"/>
+            </svg>
+            네이버로 계속하기
           </button>
         </div>
 
