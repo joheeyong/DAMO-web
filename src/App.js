@@ -5,6 +5,7 @@ import LandingPage from './features/landing/pages/LandingPage';
 import MapsPage from './features/maps/pages/MapsPage';
 import PushPage from './features/push/pages/PushPage';
 import SearchPage from './features/search/pages/SearchPage';
+import ContentDetailPage from './features/search/pages/ContentDetailPage';
 import TermsPage from './features/legal/pages/TermsPage';
 import PrivacyPage from './features/legal/pages/PrivacyPage';
 import LoginPage from './features/auth/pages/LoginPage';
@@ -36,6 +37,7 @@ function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/search" element={<SearchPage />} />
+        <Route path="/content" element={<ContentDetailPage />} />
         <Route path="/maps" element={<MapsPage />} />
         <Route path="/push" element={<PushPage />} />
         <Route path="/terms" element={<TermsPage />} />

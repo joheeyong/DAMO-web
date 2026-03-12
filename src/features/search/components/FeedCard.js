@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { analytics, logEvent } from '../../../core/firebase';
 import { activityApi } from '../api/activityApi';
 import './FeedCard.css';
@@ -96,6 +97,7 @@ function VideoPreview({ item, isShorts }) {
 }
 
 function FeedCard({ item }) {
+  const navigate = useNavigate();
   const platform = PLATFORM_LABELS[item.platform] || { label: item.platform, color: '#6b7280' };
   const isYoutube = item.platform === 'youtube';
   const isShorts = item.platform === 'shorts';
@@ -105,21 +107,23 @@ function FeedCard({ item }) {
   const hasImage = !!item.image;
   const isVideo = isYoutube || isShorts;
 
+  const handleClick = (e) => {
+    e.preventDefault();
+    logEvent(analytics, 'select_content', {
+      content_type: item.platform,
+      item_id: item.id,
+    });
+    if (localStorage.getItem('auth_token')) {
+      activityApi.recordClick(item.id, item.platform, item.sourceKeyword);
+    }
+    navigate('/content', { state: { item } });
+  };
+
   return (
     <a
       href={item.link}
-      target="_blank"
-      rel="noopener noreferrer"
       className={`feed-card ${isYoutube ? 'feed-card-youtube' : ''} ${isShorts ? 'feed-card-shorts' : ''}`}
-      onClick={() => {
-        logEvent(analytics, 'select_content', {
-          content_type: item.platform,
-          item_id: item.id,
-        });
-        if (localStorage.getItem('auth_token')) {
-          activityApi.recordClick(item.id, item.platform, item.sourceKeyword);
-        }
-      }}
+      onClick={handleClick}
     >
       {isShorts && hasImage && (
         <VideoPreview item={item} isShorts={true} />
