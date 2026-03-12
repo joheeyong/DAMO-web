@@ -119,9 +119,48 @@ export const searchAll = createAsyncThunk(
 
 export const fetchTrending = createAsyncThunk(
   'search/fetchTrending',
-  async () => {
-    const raw = await searchApi.trending(10);
-    return { items: normalizeItems(raw), keyword: raw.keyword || '' };
+  async (_, { getState }) => {
+    const { auth } = getState();
+    const userInterests = auth.user?.interests
+      ? auth.user.interests.split(',').filter(Boolean)
+      : [];
+
+    // Always fetch trending
+    const trendingPromise = searchApi.trending(10);
+
+    // If user has interests, also search 2 random interest keywords
+    let interestPromises = [];
+    if (userInterests.length > 0) {
+      const shuffled = [...userInterests].sort(() => Math.random() - 0.5);
+      const picks = shuffled.slice(0, Math.min(2, shuffled.length));
+      interestPromises = picks.map((kw) => searchApi.searchAll(kw, 5));
+    }
+
+    const [trendingRaw, ...interestResults] = await Promise.all([
+      trendingPromise,
+      ...interestPromises,
+    ]);
+
+    const trendingItems = normalizeItems(trendingRaw);
+    const interestItems = interestResults.flatMap((raw) => normalizeItems(raw));
+
+    // Merge: deduplicate, then interleave interest items into trending
+    const seenIds = new Set(trendingItems.map((i) => i.id));
+    const uniqueInterestItems = interestItems.filter((i) => {
+      if (seenIds.has(i.id)) return false;
+      seenIds.add(i.id);
+      return true;
+    });
+
+    // Interleave: insert interest items every 3rd position
+    const merged = [...trendingItems];
+    let insertIdx = 2;
+    for (const item of uniqueInterestItems) {
+      merged.splice(insertIdx, 0, item);
+      insertIdx += 3;
+    }
+
+    return { items: merged, keyword: trendingRaw.keyword || '' };
   }
 );
 
