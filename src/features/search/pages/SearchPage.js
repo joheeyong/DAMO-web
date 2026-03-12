@@ -27,9 +27,11 @@ function SearchPage() {
   const [inputValue, setInputValue] = useState('');
   const [headerHidden, setHeaderHidden] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
+  const [filterHeight, setFilterHeight] = useState(0);
   const [pullDistance, setPullDistance] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
   const headerRef = useRef(null);
+  const filterRef = useRef(null);
   const observerRef = useRef(null);
   const lastScrollY = useRef(0);
   const touchStartY = useRef(0);
@@ -37,8 +39,10 @@ function SearchPage() {
   const PULL_THRESHOLD = 80;
 
   useEffect(() => {
-    if (!headerRef.current) return;
-    const measure = () => setHeaderHeight(headerRef.current.offsetHeight);
+    const measure = () => {
+      if (headerRef.current) setHeaderHeight(headerRef.current.offsetHeight);
+      if (filterRef.current) setFilterHeight(filterRef.current.offsetHeight);
+    };
     measure();
     window.addEventListener('resize', measure);
     return () => window.removeEventListener('resize', measure);
@@ -193,6 +197,7 @@ function SearchPage() {
       </header>
 
       <div
+        ref={filterRef}
         className={`search-filters ${headerHidden ? 'filters-top' : ''}`}
         style={!headerHidden && headerHeight ? { top: headerHeight } : undefined}
       >
@@ -238,7 +243,7 @@ function SearchPage() {
         </div>
       </div>
 
-      <main className="search-feed">
+      <main className="search-feed" style={headerHeight && filterHeight ? { paddingTop: headerHeight + filterHeight + 16 } : undefined}>
         {loading && (
           <div className="search-loading">
             <div className="spinner" />
