@@ -125,10 +125,25 @@ export const fetchTrending = createAsyncThunk(
   }
 );
 
+const VIRAL_KEYWORDS = [
+  '맛집', '여행', 'IT', '영화', '음악', '패션', '게임', '요리',
+  '운동', '뷰티', '일상', 'vlog', '리뷰', '먹방', '캠핑',
+  '인테리어', '자동차', '펫', '공부', '재테크', '드라마', '축구',
+];
+
+let usedKeywords = [];
+
 export const fetchMoreTrending = createAsyncThunk(
   'search/fetchMoreTrending',
   async () => {
-    const raw = await searchApi.trending(10);
+    if (usedKeywords.length >= VIRAL_KEYWORDS.length) {
+      usedKeywords = [];
+    }
+    const available = VIRAL_KEYWORDS.filter((k) => !usedKeywords.includes(k));
+    const keyword = available[Math.floor(Math.random() * available.length)];
+    usedKeywords.push(keyword);
+
+    const raw = await searchApi.searchAll(keyword, 5);
     return { items: normalizeItems(raw) };
   }
 );
