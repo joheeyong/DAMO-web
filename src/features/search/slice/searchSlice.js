@@ -136,12 +136,14 @@ export const fetchTrending = createAsyncThunk(
       interestPromises = picks.map((kw) => searchApi.searchAll(kw, 5));
     }
 
-    // Shorts: always fetch Korean shorts (interest keywords or viral fallback)
-    const shortsPool = userInterests.length > 0 ? userInterests : VIRAL_KEYWORDS;
+    // Shorts: always fetch Korean shorts (interest keywords + viral for robustness)
+    const shortsPool = userInterests.length > 0
+      ? [...userInterests, ...VIRAL_KEYWORDS]
+      : VIRAL_KEYWORDS;
     const shortsShuffled = [...shortsPool].sort(() => Math.random() - 0.5);
-    const shortsPicks = shortsShuffled.slice(0, Math.min(3, shortsShuffled.length));
+    const shortsPicks = shortsShuffled.slice(0, Math.min(5, shortsShuffled.length));
     const shortsPromises = shortsPicks.map((kw) =>
-      searchApi.searchByCategory('shorts', kw, 5)
+      searchApi.searchByCategory('shorts', kw, 5).catch(() => null)
     );
 
     const [trendingRaw, ...rest] = await Promise.all([
@@ -156,9 +158,9 @@ export const fetchTrending = createAsyncThunk(
     const trendingItems = normalizeItems(trendingRaw);
     const interestItems = interestResults.flatMap((raw) => normalizeItems(raw));
 
-    // Replace trending shorts with keyword-based Korean shorts (fallback to trending if empty)
-    let finalItems;
+    // Collect keyword shorts from all attempts
     const keywordShorts = shortsResults.flatMap((raw) => {
+      if (!raw) return [];
       try {
         const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
         return normalizeItems({ shorts: typeof parsed === 'string' ? parsed : JSON.stringify(parsed) });
@@ -166,7 +168,6 @@ export const fetchTrending = createAsyncThunk(
         return [];
       }
     });
-    // Deduplicate
     const seenShorts = new Set();
     const uniqueKeywordShorts = keywordShorts.filter((s) => {
       if (seenShorts.has(s.id)) return false;
@@ -174,12 +175,18 @@ export const fetchTrending = createAsyncThunk(
       return true;
     });
 
-    if (uniqueKeywordShorts.length > 0) {
-      finalItems = [...trendingItems.filter((i) => i.platform !== 'shorts'), ...uniqueKeywordShorts];
-    } else {
-      // Keep original trending shorts if keyword search returned nothing
-      finalItems = trendingItems;
+    // Merge: keyword shorts + trending shorts as fallback, always keep some
+    const trendingShorts = trendingItems.filter((i) => i.platform === 'shorts');
+    const allShorts = uniqueKeywordShorts.length > 0 ? uniqueKeywordShorts : trendingShorts;
+    // If keyword shorts exist but few, supplement with trending shorts
+    let finalShorts = [...allShorts];
+    if (uniqueKeywordShorts.length > 0 && uniqueKeywordShorts.length < 4) {
+      const extraIds = new Set(finalShorts.map((s) => s.id));
+      trendingShorts.forEach((s) => {
+        if (!extraIds.has(s.id)) finalShorts.push(s);
+      });
     }
+    const finalItems = [...trendingItems.filter((i) => i.platform !== 'shorts'), ...finalShorts];
 
     // Merge interest items (non-shorts)
     const seenIds = new Set(finalItems.map((i) => i.id));
@@ -238,29 +245,34 @@ export const fetchMoreTrending = createAsyncThunk(
     }
     usedKeywords.push(keyword);
 
-    const promises = [searchApi.searchAll(keyword, 5)];
+    // Fetch main content + multiple shorts keywords for robustness
+    const shortsPool = userInterests.length > 0
+      ? [...userInterests, ...VIRAL_KEYWORDS]
+      : VIRAL_KEYWORDS;
+    const shortsShuffled = [...shortsPool].sort(() => Math.random() - 0.5);
+    const shortsPicks = shortsShuffled.slice(0, 3);
 
-    // Always fetch Korean shorts (interest or viral fallback)
-    const shortsPool = userInterests.length > 0 ? userInterests : VIRAL_KEYWORDS;
-    const shortsKw = shortsPool[Math.floor(Math.random() * shortsPool.length)];
-    promises.push(searchApi.searchByCategory('shorts', shortsKw, 3));
-
-    const [raw, shortsRaw] = await Promise.all(promises);
+    const [raw, ...shortsResults] = await Promise.all([
+      searchApi.searchAll(keyword, 5),
+      ...shortsPicks.map((kw) => searchApi.searchByCategory('shorts', kw, 3).catch(() => null)),
+    ]);
     let items = normalizeItems(raw);
 
-    // Replace generic shorts with Korean keyword shorts (keep originals if empty)
-    if (shortsRaw) {
+    // Collect shorts from all keyword attempts
+    const kwShorts = shortsResults.flatMap((sr) => {
+      if (!sr) return [];
       try {
-        const parsed = typeof shortsRaw === 'string' ? JSON.parse(shortsRaw) : shortsRaw;
-        const kwShorts = normalizeItems({
-          shorts: typeof parsed === 'string' ? parsed : JSON.stringify(parsed),
-        });
-        if (kwShorts.length > 0) {
-          items = [...items.filter((i) => i.platform !== 'shorts'), ...kwShorts];
-        }
+        const parsed = typeof sr === 'string' ? JSON.parse(sr) : sr;
+        return normalizeItems({ shorts: typeof parsed === 'string' ? parsed : JSON.stringify(parsed) });
       } catch {
-        // keep original items
+        return [];
       }
+    });
+    if (kwShorts.length > 0) {
+      const originalShorts = items.filter((i) => i.platform === 'shorts');
+      const seenIds = new Set(kwShorts.map((s) => s.id));
+      const extra = originalShorts.filter((s) => !seenIds.has(s.id));
+      items = [...items.filter((i) => i.platform !== 'shorts'), ...kwShorts, ...extra];
     }
 
     return { items };
