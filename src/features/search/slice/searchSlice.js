@@ -3,6 +3,7 @@ import { searchApi } from '../api/searchApi';
 
 const FILTERS = [
   { key: 'all', label: '전체' },
+  { key: 'shorts', label: 'Shorts' },
   { key: 'youtube', label: '유튜브' },
   { key: 'blog', label: '블로그' },
   { key: 'news', label: '뉴스' },
@@ -33,16 +34,19 @@ function normalizeItems(rawResults) {
       continue;
     }
 
-    if (category === 'youtube') {
+    if (category === 'youtube' || category === 'shorts') {
       const ytItems = data.items || [];
       ytItems.forEach((item) => {
         const snippet = item.snippet || {};
+        const videoId = item.id?.videoId || item.id;
         items.push({
-          id: `yt-${item.id?.videoId || item.id}`,
-          platform: 'youtube',
+          id: `${category}-${videoId}`,
+          platform: category,
           title: snippet.title || '',
           description: snippet.description || '',
-          link: `https://www.youtube.com/watch?v=${item.id?.videoId || item.id}`,
+          link: category === 'shorts'
+            ? `https://www.youtube.com/shorts/${videoId}`
+            : `https://www.youtube.com/watch?v=${videoId}`,
           image: snippet.thumbnails?.high?.url || snippet.thumbnails?.medium?.url || '',
           author: snippet.channelTitle || '',
           date: snippet.publishedAt?.substring(0, 10) || '',
@@ -121,6 +125,14 @@ export const fetchTrending = createAsyncThunk(
   }
 );
 
+export const fetchMoreTrending = createAsyncThunk(
+  'search/fetchMoreTrending',
+  async () => {
+    const raw = await searchApi.trending(10);
+    return { items: normalizeItems(raw) };
+  }
+);
+
 const searchSlice = createSlice({
   name: 'search',
   initialState: {
@@ -128,6 +140,7 @@ const searchSlice = createSlice({
     activeFilter: 'all',
     items: [],
     loading: false,
+    loadingMore: false,
     trendingLoaded: false,
     trendingKeyword: '',
   },
@@ -166,6 +179,18 @@ const searchSlice = createSlice({
       .addCase(fetchTrending.rejected, (state) => {
         state.loading = false;
         state.trendingLoaded = true;
+      })
+      .addCase(fetchMoreTrending.pending, (state) => {
+        state.loadingMore = true;
+      })
+      .addCase(fetchMoreTrending.fulfilled, (state, action) => {
+        state.loadingMore = false;
+        const existingIds = new Set(state.items.map((i) => i.id));
+        const newItems = action.payload.items.filter((i) => !existingIds.has(i.id));
+        state.items = [...state.items, ...newItems];
+      })
+      .addCase(fetchMoreTrending.rejected, (state) => {
+        state.loadingMore = false;
       });
   },
 });

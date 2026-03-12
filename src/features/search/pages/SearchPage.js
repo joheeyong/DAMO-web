@@ -1,16 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { searchAll, fetchTrending, setActiveFilter, clearSearch, FILTERS } from '../slice/searchSlice';
+import { searchAll, fetchTrending, fetchMoreTrending, setActiveFilter, clearSearch, FILTERS } from '../slice/searchSlice';
 import { analytics, logEvent } from '../../../core/firebase';
 import FeedCard from '../components/FeedCard';
 import './SearchPage.css';
 
 function SearchPage() {
   const dispatch = useDispatch();
-  const { query, activeFilter, items, loading, trendingLoaded } = useSelector(
+  const { query, activeFilter, items, loading, loadingMore, trendingLoaded } = useSelector(
     (state) => state.search
   );
   const [inputValue, setInputValue] = useState('');
+  const observerRef = useRef(null);
 
   useEffect(() => {
     if (!trendingLoaded && !query) {
@@ -21,6 +22,20 @@ function SearchPage() {
   useEffect(() => {
     logEvent(analytics, 'page_view', { page_title: 'Search', page_path: '/search' });
   }, []);
+
+  const lastItemRef = useCallback(
+    (node) => {
+      if (loading || loadingMore || query) return;
+      if (observerRef.current) observerRef.current.disconnect();
+      observerRef.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) {
+          dispatch(fetchMoreTrending());
+        }
+      });
+      if (node) observerRef.current.observe(node);
+    },
+    [loading, loadingMore, query, dispatch]
+  );
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -33,6 +48,10 @@ function SearchPage() {
     activeFilter === 'all'
       ? items
       : items.filter((item) => item.platform === activeFilter);
+
+  const shortsItems = filteredItems.filter((item) => item.platform === 'shorts');
+  const nonShortsItems = filteredItems.filter((item) => item.platform !== 'shorts');
+  const showShortsRow = activeFilter === 'all' && shortsItems.length > 0;
 
   return (
     <div className="search-page">
@@ -105,11 +124,35 @@ function SearchPage() {
         )}
 
         {!loading && filteredItems.length > 0 && (
-          <div className="feed-grid">
-            {filteredItems.map((item) => (
-              <FeedCard key={item.id} item={item} />
-            ))}
-          </div>
+          <>
+            {showShortsRow && (
+              <div className="shorts-section">
+                <h3 className="shorts-section-title">Shorts</h3>
+                <div className="shorts-row">
+                  {shortsItems.map((item) => (
+                    <FeedCard key={item.id} item={item} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="feed-grid">
+              {(activeFilter === 'shorts' ? shortsItems : nonShortsItems).map((item, idx) => {
+                const isLast = idx === (activeFilter === 'shorts' ? shortsItems : nonShortsItems).length - 1;
+                return (
+                  <div ref={isLast ? lastItemRef : null} key={item.id}>
+                    <FeedCard item={item} />
+                  </div>
+                );
+              })}
+            </div>
+
+            {loadingMore && (
+              <div className="search-loading-more">
+                <div className="spinner" />
+              </div>
+            )}
+          </>
         )}
       </main>
     </div>

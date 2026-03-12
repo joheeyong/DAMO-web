@@ -12,11 +12,13 @@ const PLATFORM_LABELS = {
   book: { label: '도서', color: '#f59e0b' },
   webkr: { label: '웹', color: '#6b7280' },
   reddit: { label: 'Reddit', color: '#ff4500' },
+  shorts: { label: 'Shorts', color: '#ff0000' },
 };
 
 function FeedCard({ item }) {
   const platform = PLATFORM_LABELS[item.platform] || { label: item.platform, color: '#6b7280' };
   const isYoutube = item.platform === 'youtube';
+  const isShorts = item.platform === 'shorts';
   const isReddit = item.platform === 'reddit';
   const isShop = item.platform === 'shop';
   const isBook = item.platform === 'book';
@@ -27,12 +29,19 @@ function FeedCard({ item }) {
       href={item.link}
       target="_blank"
       rel="noopener noreferrer"
-      className={`feed-card ${isYoutube ? 'feed-card-youtube' : ''}`}
+      className={`feed-card ${isYoutube ? 'feed-card-youtube' : ''} ${isShorts ? 'feed-card-shorts' : ''}`}
       onClick={() => logEvent(analytics, 'select_content', {
         content_type: item.platform,
         item_id: item.id,
       })}
     >
+      {isShorts && hasImage && (
+        <div className="feed-shorts-wrap">
+          <img src={item.image} alt="" className="feed-shorts-thumb" />
+          <div className="feed-shorts-play">&#9654;</div>
+        </div>
+      )}
+
       {isYoutube && hasImage && (
         <div className="feed-thumbnail-wrap">
           <img src={item.image} alt="" className="feed-thumbnail" />
@@ -83,6 +92,18 @@ function FeedCard({ item }) {
           <div className="feed-meta">
             {item.author && <span>{item.author}</span>}
             {item.date && <span>{item.date}</span>}
+          </div>
+        </div>
+      )}
+
+      {isShorts && (
+        <div className="feed-shorts-info">
+          <div className="feed-badge" style={{ background: platform.color }}>
+            {platform.label}
+          </div>
+          <h3 className="feed-title">{item.title}</h3>
+          <div className="feed-meta">
+            {item.author && <span>{item.author}</span>}
           </div>
         </div>
       )}

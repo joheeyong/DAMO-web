@@ -136,6 +136,54 @@
   color: #aeaeb2;
 }
 
+/* Shorts card */
+.feed-card-shorts {
+  width: 160px;
+  flex-shrink: 0;
+}
+
+.feed-shorts-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  overflow: hidden;
+  background: #f0f0f2;
+}
+
+.feed-shorts-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.feed-shorts-play {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 36px;
+  height: 36px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: #fff;
+}
+
+.feed-shorts-info {
+  padding: 8px 10px;
+}
+
+.feed-shorts-info .feed-title {
+  font-size: 0.82rem;
+  -webkit-line-clamp: 2;
+}
+
+.feed-shorts-info .feed-meta {
+  font-size: 0.7rem;
+}
+
 /* Reddit */
 .feed-subreddit {
   font-size: 0.78rem;
