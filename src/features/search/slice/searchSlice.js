@@ -14,6 +14,7 @@ const FILTERS = [
   { key: 'book', label: '도서' },
   { key: 'webkr', label: '웹문서' },
   { key: 'reddit', label: 'Reddit' },
+  { key: 'instagram', label: 'Instagram' },
 ];
 
 export { FILTERS };
@@ -51,6 +52,26 @@ function normalizeItems(rawResults) {
           author: snippet.channelTitle || '',
           date: snippet.publishedAt?.substring(0, 10) || '',
           extra: item.statistics || null,
+        });
+      });
+    } else if (category === 'instagram') {
+      const igItems = data.data || [];
+      igItems.forEach((item) => {
+        const caption = item.caption || '';
+        items.push({
+          id: `instagram-${item.id}`,
+          platform: 'instagram',
+          title: caption.substring(0, 80) || 'Instagram',
+          description: caption.substring(0, 200),
+          link: item.permalink || '',
+          image: item.media_type === 'VIDEO' ? (item.thumbnail_url || '') : (item.media_url || ''),
+          author: '',
+          date: item.timestamp ? item.timestamp.substring(0, 10) : '',
+          extra: {
+            mediaType: item.media_type,
+            likeCount: item.like_count || 0,
+            commentsCount: item.comments_count || 0,
+          },
         });
       });
     } else if (category === 'reddit') {

@@ -14,6 +14,7 @@ const PLATFORM_LABELS = {
   webkr: { label: '웹', color: '#6b7280' },
   reddit: { label: 'Reddit', color: '#ff4500' },
   shorts: { label: 'Shorts', color: '#ff0000' },
+  instagram: { label: 'Instagram', color: '#E1306C' },
 };
 
 function getVideoId(item) {
