@@ -156,24 +156,28 @@ export const fetchTrending = createAsyncThunk(
     const trendingItems = normalizeItems(trendingRaw);
     const interestItems = interestResults.flatMap((raw) => normalizeItems(raw));
 
-    // Replace trending shorts with interest-based shorts
+    // Replace trending shorts with keyword-based Korean shorts (fallback to trending if empty)
     let finalItems;
-    if (shortsResults.length > 0) {
-      const interestShorts = shortsResults.flatMap((raw) => {
+    const keywordShorts = shortsResults.flatMap((raw) => {
+      try {
         const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
         return normalizeItems({ shorts: typeof parsed === 'string' ? parsed : JSON.stringify(parsed) });
-      });
-      // Remove trending shorts, add interest shorts
-      finalItems = trendingItems.filter((i) => i.platform !== 'shorts');
-      // Deduplicate interest shorts
-      const seenShorts = new Set();
-      interestShorts.forEach((s) => {
-        if (!seenShorts.has(s.id)) {
-          seenShorts.add(s.id);
-          finalItems.push(s);
-        }
-      });
+      } catch {
+        return [];
+      }
+    });
+    // Deduplicate
+    const seenShorts = new Set();
+    const uniqueKeywordShorts = keywordShorts.filter((s) => {
+      if (seenShorts.has(s.id)) return false;
+      seenShorts.add(s.id);
+      return true;
+    });
+
+    if (uniqueKeywordShorts.length > 0) {
+      finalItems = [...trendingItems.filter((i) => i.platform !== 'shorts'), ...uniqueKeywordShorts];
     } else {
+      // Keep original trending shorts if keyword search returned nothing
       finalItems = trendingItems;
     }
 
@@ -244,14 +248,19 @@ export const fetchMoreTrending = createAsyncThunk(
     const [raw, shortsRaw] = await Promise.all(promises);
     let items = normalizeItems(raw);
 
-    // Replace generic shorts with interest shorts
+    // Replace generic shorts with Korean keyword shorts (keep originals if empty)
     if (shortsRaw) {
-      items = items.filter((i) => i.platform !== 'shorts');
-      const parsed = typeof shortsRaw === 'string' ? JSON.parse(shortsRaw) : shortsRaw;
-      const interestShorts = normalizeItems({
-        shorts: typeof parsed === 'string' ? parsed : JSON.stringify(parsed),
-      });
-      items = [...items, ...interestShorts];
+      try {
+        const parsed = typeof shortsRaw === 'string' ? JSON.parse(shortsRaw) : shortsRaw;
+        const kwShorts = normalizeItems({
+          shorts: typeof parsed === 'string' ? parsed : JSON.stringify(parsed),
+        });
+        if (kwShorts.length > 0) {
+          items = [...items.filter((i) => i.platform !== 'shorts'), ...kwShorts];
+        }
+      } catch {
+        // keep original items
+      }
     }
 
     return { items };
