@@ -1,11 +1,18 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { authApi } from '../api/authApi';
 
+function notifyFlutterAuth(token) {
+  try {
+    window.DamoAuth?.postMessage(token);
+  } catch (e) { /* not in Flutter WebView */ }
+}
+
 export const googleLogin = createAsyncThunk(
   'auth/googleLogin',
   async ({ code, redirectUri }) => {
     const data = await authApi.loginWithGoogle(code, redirectUri);
     localStorage.setItem('auth_token', data.token);
+    notifyFlutterAuth(data.token);
     return data;
   }
 );
@@ -15,6 +22,7 @@ export const naverLogin = createAsyncThunk(
   async ({ code, state, redirectUri }) => {
     const data = await authApi.loginWithNaver(code, state, redirectUri);
     localStorage.setItem('auth_token', data.token);
+    notifyFlutterAuth(data.token);
     return data;
   }
 );
@@ -89,6 +97,8 @@ const authSlice = createSlice({
       })
       .addCase(fetchMe.fulfilled, (state, action) => {
         state.user = action.payload;
+        const token = localStorage.getItem('auth_token');
+        if (token) notifyFlutterAuth(token);
       })
       .addCase(fetchMe.rejected, (state) => {
         state.user = null;
