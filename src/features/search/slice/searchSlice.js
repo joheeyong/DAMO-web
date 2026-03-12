@@ -129,12 +129,10 @@ export const fetchTrending = createAsyncThunk(
     const trendingPromise = searchApi.trending(10);
 
     // Interest-based search (searchAll already includes shorts per keyword)
-    let interestPromises = [];
     const shortsPool = userInterests.length > 0 ? userInterests : VIRAL_KEYWORDS;
     const shuffled = [...shortsPool].sort(() => Math.random() - 0.5);
-    // Always search 2 keywords to get interest-based shorts + content
     const picks = shuffled.slice(0, Math.min(2, shuffled.length));
-    interestPromises = picks.map((kw) => searchApi.searchAll(kw, 5).catch(() => ({})));
+    const interestPromises = picks.map((kw) => searchApi.searchAll(kw, 5).catch(() => ({})));
 
     const [trendingRaw, ...interestResults] = await Promise.all([
       trendingPromise,
@@ -142,14 +140,18 @@ export const fetchTrending = createAsyncThunk(
     ]);
 
     const trendingItems = normalizeItems(trendingRaw);
-    const interestItems = interestResults.flatMap((raw) => normalizeItems(raw));
 
-    // Separate shorts from interest results
-    const interestShorts = interestItems.filter((i) => i.platform === 'shorts');
-    const interestNonShorts = interestItems.filter((i) => i.platform !== 'shorts');
+    // Tag interest items with their source keyword
+    const interestGroups = picks.map((kw, idx) => {
+      const items = normalizeItems(interestResults[idx] || {});
+      return { keyword: kw, items: items.map((item) => ({ ...item, sourceKeyword: kw })) };
+    });
+
+    const allInterestItems = interestGroups.flatMap((g) => g.items);
+    const interestShorts = allInterestItems.filter((i) => i.platform === 'shorts');
     const trendingShorts = trendingItems.filter((i) => i.platform === 'shorts');
 
-    // Combine shorts: interest shorts first, then trending shorts as supplement
+    // Combine shorts
     const seenShortIds = new Set();
     const allShorts = [...interestShorts, ...trendingShorts].filter((s) => {
       if (seenShortIds.has(s.id)) return false;
@@ -157,20 +159,24 @@ export const fetchTrending = createAsyncThunk(
       return true;
     });
 
-    // Build non-shorts list: trending + interleave interest items
+    // Build non-shorts: trending items, then insert interest groups as blocks
     const trendingNonShorts = trendingItems.filter((i) => i.platform !== 'shorts');
     const seenIds = new Set(trendingNonShorts.map((i) => i.id));
-    const uniqueInterestItems = interestNonShorts.filter((i) => {
-      if (seenIds.has(i.id)) return false;
-      seenIds.add(i.id);
-      return true;
-    });
 
     const nonShorts = [...trendingNonShorts];
-    let insertIdx = 2;
-    for (const item of uniqueInterestItems) {
-      nonShorts.splice(insertIdx, 0, item);
-      insertIdx += 3;
+    let insertIdx = 5;
+    for (const group of interestGroups) {
+      const uniqueGroupItems = group.items
+        .filter((i) => i.platform !== 'shorts')
+        .filter((i) => {
+          if (seenIds.has(i.id)) return false;
+          seenIds.add(i.id);
+          return true;
+        });
+      if (uniqueGroupItems.length > 0) {
+        nonShorts.splice(insertIdx, 0, ...uniqueGroupItems);
+        insertIdx += uniqueGroupItems.length + 5;
+      }
     }
 
     return { items: [...nonShorts, ...allShorts], keyword: trendingRaw.keyword || '' };

@@ -138,22 +138,26 @@ function SearchPage() {
   const userInterests = user?.interests ? user.interests.split(',').filter(Boolean) : [];
   const userName = user?.name || '회원';
 
-  // Build banner insertion map: every 8 items, insert a banner
+  // Build banner map: show banner at the first item of each sourceKeyword group
   const bannerMap = useMemo(() => {
-    if (!query && userInterests.length > 0) {
+    if (!query) {
       const map = {};
+      const seenKeywords = new Set();
       let bannerIdx = 0;
-      for (let i = 7; i < nonShortsItems.length; i += 8) {
-        const interest = userInterests[bannerIdx % userInterests.length];
-        const template = INTEREST_BANNERS[bannerIdx % INTEREST_BANNERS.length];
-        map[i] = template(userName, interest);
-        bannerIdx++;
+      for (let i = 0; i < nonShortsItems.length; i++) {
+        const kw = nonShortsItems[i].sourceKeyword;
+        if (kw && !seenKeywords.has(kw)) {
+          seenKeywords.add(kw);
+          const template = INTEREST_BANNERS[bannerIdx % INTEREST_BANNERS.length];
+          map[i] = template(userName, kw);
+          bannerIdx++;
+        }
       }
       return map;
     }
     return {};
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, nonShortsItems.length, userName, userInterests.join(',')]);
+  }, [query, nonShortsItems.length, userName]);
 
   return (
     <div
