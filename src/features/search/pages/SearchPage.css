@@ -11,8 +11,10 @@
   background: #fff;
   border-bottom: 1px solid #e5e5e7;
   padding: 14px 20px;
-  position: sticky;
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 100;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
@@ -83,8 +85,10 @@
 .search-filters {
   background: #fff;
   border-bottom: 1px solid #e5e5e7;
-  position: sticky;
+  position: fixed;
   top: 57px;
+  left: 0;
+  right: 0;
   z-index: 99;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -145,7 +149,7 @@
   max-width: 700px;
   width: 100%;
   margin: 0 auto;
-  padding: 16px 20px 100px;
+  padding: 116px 20px 100px;
   box-sizing: border-box;
 }
 
@@ -283,7 +287,7 @@
   }
 
   .search-filters {
-    top: 50px;
+    top: 47px;
   }
 
   .filters-inner {
@@ -297,7 +301,7 @@
   }
 
   .search-feed {
-    padding: 12px 14px 90px;
+    padding: 100px 14px 90px;
   }
 
   .trending-header h2 {
