@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { analytics, logEvent } from '../../../core/firebase';
 import './FeedCard.css';
 
@@ -15,6 +16,78 @@ const PLATFORM_LABELS = {
   shorts: { label: 'Shorts', color: '#ff0000' },
 };
 
+function getVideoId(item) {
+  if (item.platform === 'shorts') {
+    return item.id.replace('shorts-', '');
+  }
+  return item.id.replace('yt-', '');
+}
+
+function VideoPreview({ item, isShorts }) {
+  const [playing, setPlaying] = useState(false);
+  const [inView, setInView] = useState(false);
+  const cardRef = useRef(null);
+  const hoverTimeout = useRef(null);
+  const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
+  const videoId = getVideoId(item);
+
+  // Mobile: auto-play when centered in viewport
+  useEffect(() => {
+    if (!isMobile || !cardRef.current) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setInView(entry.isIntersecting),
+      { threshold: 0.7 }
+    );
+    observer.observe(cardRef.current);
+    return () => observer.disconnect();
+  }, [isMobile]);
+
+  useEffect(() => {
+    if (isMobile) {
+      setPlaying(inView);
+    }
+  }, [inView, isMobile]);
+
+  const handleMouseEnter = useCallback(() => {
+    if (isMobile) return;
+    hoverTimeout.current = setTimeout(() => setPlaying(true), 500);
+  }, [isMobile]);
+
+  const handleMouseLeave = useCallback(() => {
+    if (isMobile) return;
+    clearTimeout(hoverTimeout.current);
+    setPlaying(false);
+  }, [isMobile]);
+
+  const wrapClass = isShorts ? 'feed-shorts-wrap' : 'feed-thumbnail-wrap';
+  const thumbClass = isShorts ? 'feed-shorts-thumb' : 'feed-thumbnail';
+  const playClass = isShorts ? 'feed-shorts-play' : 'feed-play-icon';
+
+  return (
+    <div
+      ref={cardRef}
+      className={wrapClass}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {playing ? (
+        <iframe
+          className="feed-video-iframe"
+          src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&modestbranding=1&playsinline=1&loop=1&playlist=${videoId}`}
+          allow="autoplay; encrypted-media"
+          allowFullScreen
+          title={item.title}
+        />
+      ) : (
+        <>
+          <img src={item.image} alt="" className={thumbClass} />
+          <div className={playClass}>&#9654;</div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function FeedCard({ item }) {
   const platform = PLATFORM_LABELS[item.platform] || { label: item.platform, color: '#6b7280' };
   const isYoutube = item.platform === 'youtube';
@@ -23,6 +96,7 @@ function FeedCard({ item }) {
   const isShop = item.platform === 'shop';
   const isBook = item.platform === 'book';
   const hasImage = !!item.image;
+  const isVideo = isYoutube || isShorts;
 
   return (
     <a
@@ -35,21 +109,11 @@ function FeedCard({ item }) {
         item_id: item.id,
       })}
     >
-      {isShorts && hasImage && (
-        <div className="feed-shorts-wrap">
-          <img src={item.image} alt="" className="feed-shorts-thumb" />
-          <div className="feed-shorts-play">&#9654;</div>
-        </div>
+      {isVideo && hasImage && (
+        <VideoPreview item={item} isShorts={isShorts} />
       )}
 
-      {isYoutube && hasImage && (
-        <div className="feed-thumbnail-wrap">
-          <img src={item.image} alt="" className="feed-thumbnail" />
-          <div className="feed-play-icon">&#9654;</div>
-        </div>
-      )}
-
-      {!isYoutube && hasImage && (
+      {!isVideo && hasImage && (
         <div className="feed-card-body">
           <img
             src={item.image}
@@ -82,7 +146,7 @@ function FeedCard({ item }) {
         </div>
       )}
 
-      {!isYoutube && !hasImage && (
+      {!isVideo && !hasImage && (
         <div className="feed-text-only">
           <div className="feed-badge" style={{ background: platform.color }}>
             {platform.label}

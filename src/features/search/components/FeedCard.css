@@ -51,6 +51,17 @@
   opacity: 0.9;
 }
 
+/* Video preview iframe */
+.feed-video-iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  pointer-events: none;
+}
+
 .feed-yt-info {
   padding: 12px 14px;
 }
