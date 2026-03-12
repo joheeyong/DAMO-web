@@ -130,37 +130,70 @@ export const fetchTrending = createAsyncThunk(
 
     // If user has interests, also search 2 random interest keywords
     let interestPromises = [];
+    let shortsPromises = [];
     if (userInterests.length > 0) {
       const shuffled = [...userInterests].sort(() => Math.random() - 0.5);
       const picks = shuffled.slice(0, Math.min(2, shuffled.length));
       interestPromises = picks.map((kw) => searchApi.searchAll(kw, 5));
+
+      // Shorts: fetch interest-based shorts separately (3 random keywords)
+      const shortsPicks = shuffled.slice(0, Math.min(3, shuffled.length));
+      shortsPromises = shortsPicks.map((kw) =>
+        searchApi.searchByCategory('shorts', kw, 5)
+      );
     }
 
-    const [trendingRaw, ...interestResults] = await Promise.all([
+    const [trendingRaw, ...rest] = await Promise.all([
       trendingPromise,
       ...interestPromises,
+      ...shortsPromises,
     ]);
+
+    const interestResults = rest.slice(0, interestPromises.length);
+    const shortsResults = rest.slice(interestPromises.length);
 
     const trendingItems = normalizeItems(trendingRaw);
     const interestItems = interestResults.flatMap((raw) => normalizeItems(raw));
 
-    // Merge: deduplicate, then interleave interest items into trending
-    const seenIds = new Set(trendingItems.map((i) => i.id));
+    // Replace trending shorts with interest-based shorts
+    let finalItems;
+    if (shortsResults.length > 0) {
+      const interestShorts = shortsResults.flatMap((raw) => {
+        const parsed = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        return normalizeItems({ shorts: typeof parsed === 'string' ? parsed : JSON.stringify(parsed) });
+      });
+      // Remove trending shorts, add interest shorts
+      finalItems = trendingItems.filter((i) => i.platform !== 'shorts');
+      // Deduplicate interest shorts
+      const seenShorts = new Set();
+      interestShorts.forEach((s) => {
+        if (!seenShorts.has(s.id)) {
+          seenShorts.add(s.id);
+          finalItems.push(s);
+        }
+      });
+    } else {
+      finalItems = trendingItems;
+    }
+
+    // Merge interest items (non-shorts)
+    const seenIds = new Set(finalItems.map((i) => i.id));
     const uniqueInterestItems = interestItems.filter((i) => {
       if (seenIds.has(i.id)) return false;
       seenIds.add(i.id);
       return true;
     });
 
-    // Interleave: insert interest items every 3rd position
-    const merged = [...trendingItems];
+    // Interleave: insert interest items every 3rd position among non-shorts
+    const shorts = finalItems.filter((i) => i.platform === 'shorts');
+    const nonShorts = finalItems.filter((i) => i.platform !== 'shorts');
     let insertIdx = 2;
     for (const item of uniqueInterestItems) {
-      merged.splice(insertIdx, 0, item);
+      nonShorts.splice(insertIdx, 0, item);
       insertIdx += 3;
     }
 
-    return { items: merged, keyword: trendingRaw.keyword || '' };
+    return { items: [...nonShorts, ...shorts], keyword: trendingRaw.keyword || '' };
   }
 );
 
@@ -200,8 +233,28 @@ export const fetchMoreTrending = createAsyncThunk(
     }
     usedKeywords.push(keyword);
 
-    const raw = await searchApi.searchAll(keyword, 5);
-    return { items: normalizeItems(raw) };
+    const promises = [searchApi.searchAll(keyword, 5)];
+
+    // Also fetch interest-based shorts
+    if (userInterests.length > 0) {
+      const shortsKw = userInterests[Math.floor(Math.random() * userInterests.length)];
+      promises.push(searchApi.searchByCategory('shorts', shortsKw, 3));
+    }
+
+    const [raw, shortsRaw] = await Promise.all(promises);
+    let items = normalizeItems(raw);
+
+    // Replace generic shorts with interest shorts
+    if (shortsRaw) {
+      items = items.filter((i) => i.platform !== 'shorts');
+      const parsed = typeof shortsRaw === 'string' ? JSON.parse(shortsRaw) : shortsRaw;
+      const interestShorts = normalizeItems({
+        shorts: typeof parsed === 'string' ? parsed : JSON.stringify(parsed),
+      });
+      items = [...items, ...interestShorts];
+    }
+
+    return { items };
   }
 );
 
