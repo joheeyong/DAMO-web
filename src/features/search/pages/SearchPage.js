@@ -1,15 +1,29 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { searchAll, fetchTrending, fetchMoreTrending, setActiveFilter, clearSearch, FILTERS } from '../slice/searchSlice';
 import { analytics, logEvent } from '../../../core/firebase';
 import FeedCard from '../components/FeedCard';
 import './SearchPage.css';
 
+const INTEREST_BANNERS = [
+  (name, interest) => `${name}님이 좋아할 ${interest} 콘텐츠`,
+  (name, interest) => `${name}님에게 딱 맞는 ${interest}`,
+  (name, interest) => `${interest}, ${name}님을 위해 골랐어요`,
+  (name, interest) => `${name}님의 관심사 ${interest} 모아보기`,
+  (name, interest) => `${interest} 좋아하시죠? ${name}님 취향저격`,
+  (name, interest) => `${name}님이 관심 있을 ${interest} 소식`,
+  (name, interest) => `오늘의 ${interest}, ${name}님 맞춤 추천`,
+  (name, interest) => `${name}님 취향 ${interest} 핫 콘텐츠`,
+  (name, interest) => `${interest} 덕후 ${name}님을 위한 픽`,
+  (name, interest) => `${name}님, ${interest} 새로운 소식이에요`,
+];
+
 function SearchPage() {
   const dispatch = useDispatch();
   const { query, activeFilter, items, loading, loadingMore, trendingLoaded } = useSelector(
     (state) => state.search
   );
+  const { user } = useSelector((state) => state.auth);
   const [inputValue, setInputValue] = useState('');
   const observerRef = useRef(null);
 
@@ -52,6 +66,26 @@ function SearchPage() {
   const shortsItems = filteredItems.filter((item) => item.platform === 'shorts');
   const nonShortsItems = filteredItems.filter((item) => item.platform !== 'shorts');
   const showShortsRow = activeFilter === 'all' && shortsItems.length > 0;
+
+  const userInterests = user?.interests ? user.interests.split(',').filter(Boolean) : [];
+  const userName = user?.name || '회원';
+
+  // Build banner insertion map: every 8 items, insert a banner
+  const bannerMap = useMemo(() => {
+    if (!query && userInterests.length > 0) {
+      const map = {};
+      let bannerIdx = 0;
+      for (let i = 7; i < nonShortsItems.length; i += 8) {
+        const interest = userInterests[bannerIdx % userInterests.length];
+        const template = INTEREST_BANNERS[bannerIdx % INTEREST_BANNERS.length];
+        map[i] = template(userName, interest);
+        bannerIdx++;
+      }
+      return map;
+    }
+    return {};
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query, nonShortsItems.length, userName, userInterests.join(',')]);
 
   return (
     <div className="search-page">
@@ -138,10 +172,18 @@ function SearchPage() {
 
             <div className="feed-grid">
               {(activeFilter === 'shorts' ? shortsItems : nonShortsItems).map((item, idx) => {
-                const isLast = idx === (activeFilter === 'shorts' ? shortsItems : nonShortsItems).length - 1;
+                const list = activeFilter === 'shorts' ? shortsItems : nonShortsItems;
+                const isLast = idx === list.length - 1;
                 return (
-                  <div ref={isLast ? lastItemRef : null} key={item.id}>
-                    <FeedCard item={item} />
+                  <div key={item.id}>
+                    {bannerMap[idx] && (
+                      <div className="feed-interest-banner">
+                        <span className="feed-interest-banner-text">{bannerMap[idx]}</span>
+                      </div>
+                    )}
+                    <div ref={isLast ? lastItemRef : null}>
+                      <FeedCard item={item} />
+                    </div>
                   </div>
                 );
               })}

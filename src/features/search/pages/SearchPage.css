@@ -229,6 +229,21 @@
   display: none;
 }
 
+/* Interest banner */
+.feed-interest-banner {
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.06), rgba(167, 139, 250, 0.08));
+  border-radius: 14px;
+  border-left: 3px solid #6366f1;
+}
+
+.feed-interest-banner-text {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #6366f1;
+}
+
 /* Loading more */
 .search-loading-more {
   display: flex;
