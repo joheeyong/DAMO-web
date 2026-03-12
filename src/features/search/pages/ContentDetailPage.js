@@ -95,9 +95,19 @@ function ContentDetailPage() {
   const iframeRef = useRef(null);
   const [iframeError, setIframeError] = useState(false);
 
+  const isApp = /DAMO-App/i.test(navigator.userAgent);
+
   useEffect(() => {
-    if (!item) navigate('/search', { replace: true });
-  }, [item, navigate]);
+    if (!item) {
+      navigate('/search', { replace: true });
+      return;
+    }
+    // In Flutter app, iframe-blocked sites go directly to mobile URL
+    const blocked = ['news', 'kin', 'cafe', 'shop', 'book', 'webkr'];
+    if (isApp && blocked.includes(item.platform)) {
+      window.location.replace(toMobileUrl(item.link, item.platform));
+    }
+  }, [item, navigate, isApp]);
 
   if (!item) return null;
 
@@ -111,7 +121,9 @@ function ContentDetailPage() {
 
   // Sites that block iframes (X-Frame-Options)
   const IFRAME_BLOCKED = ['news', 'kin', 'cafe', 'shop', 'book', 'webkr'];
-  const useIframe = !IFRAME_BLOCKED.includes(item.platform);
+  const isBlocked = IFRAME_BLOCKED.includes(item.platform);
+  const isFlutterApp = /DAMO-App/i.test(navigator.userAgent);
+  const useIframe = !isBlocked;
 
   const handleBack = () => {
     if (window.history.length > 1) {
