@@ -74,6 +74,12 @@
   gap: 10px;
 }
 
+.bookmarks-loading {
+  display: flex;
+  justify-content: center;
+  padding: 60px 0;
+}
+
 .bookmarks-empty {
   display: flex;
   flex-direction: column;

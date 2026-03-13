@@ -1,27 +1,48 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { bookmarkApi } from '../api/bookmarkApi';
 import FeedCard from '../components/FeedCard';
 import './BookmarksPage.css';
 
-function getBookmarks() {
+function getLocalBookmarks() {
   try { return JSON.parse(localStorage.getItem('damo_bookmarks') || '[]'); } catch { return []; }
 }
 
 function BookmarksPage() {
   const navigate = useNavigate();
-  const [bookmarks, setBookmarks] = useState(getBookmarks);
+  const [bookmarks, setBookmarks] = useState(getLocalBookmarks);
+  const [loading, setLoading] = useState(false);
 
+  // On mount: sync with server if logged in
   useEffect(() => {
-    const onChanged = () => setBookmarks(getBookmarks());
+    let cancelled = false;
+    async function load() {
+      setLoading(true);
+      try {
+        // Sync merges localStorage → server, returns full list
+        await bookmarkApi.sync();
+        const list = await bookmarkApi.list();
+        if (!cancelled) setBookmarks(list);
+      } catch {
+        if (!cancelled) setBookmarks(getLocalBookmarks());
+      }
+      if (!cancelled) setLoading(false);
+    }
+    load();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Listen for changes from FeedCard bookmark toggles
+  useEffect(() => {
+    const onChanged = () => setBookmarks(getLocalBookmarks());
     window.addEventListener('bookmarks-changed', onChanged);
     return () => window.removeEventListener('bookmarks-changed', onChanged);
   }, []);
 
-  const clearAll = useCallback(() => {
+  const clearAll = useCallback(async () => {
     if (!window.confirm('저장된 북마크를 모두 삭제할까요?')) return;
-    localStorage.removeItem('damo_bookmarks');
+    await bookmarkApi.clearAll();
     setBookmarks([]);
-    window.dispatchEvent(new Event('bookmarks-changed'));
   }, []);
 
   return (
@@ -41,7 +62,11 @@ function BookmarksPage() {
       </header>
 
       <main className="bookmarks-feed">
-        {bookmarks.length === 0 ? (
+        {loading ? (
+          <div className="bookmarks-loading">
+            <div className="spinner" />
+          </div>
+        ) : bookmarks.length === 0 ? (
           <div className="bookmarks-empty">
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d1d1d6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />

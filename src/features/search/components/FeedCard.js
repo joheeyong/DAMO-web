@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { analytics, logEvent } from '../../../core/firebase';
 import { activityApi } from '../api/activityApi';
+import { bookmarkApi } from '../api/bookmarkApi';
 import './FeedCard.css';
 
 const PLATFORM_LABELS = {
@@ -96,37 +97,9 @@ function VideoPreview({ item, isShorts }) {
   );
 }
 
-function getBookmarks() {
-  try { return JSON.parse(localStorage.getItem('damo_bookmarks') || '[]'); } catch { return []; }
-}
-
-function toggleBookmark(item) {
-  const bookmarks = getBookmarks();
-  const idx = bookmarks.findIndex((b) => b.id === item.id);
-  if (idx >= 0) {
-    bookmarks.splice(idx, 1);
-  } else {
-    bookmarks.unshift({
-      id: item.id,
-      platform: item.platform,
-      title: item.title,
-      description: item.description,
-      link: item.link,
-      image: item.image,
-      author: item.author,
-      date: item.date,
-      extra: item.extra,
-      savedAt: new Date().toISOString(),
-    });
-  }
-  localStorage.setItem('damo_bookmarks', JSON.stringify(bookmarks));
-  window.dispatchEvent(new Event('bookmarks-changed'));
-  return idx < 0; // true if added
-}
-
 function FeedCard({ item }) {
   const navigate = useNavigate();
-  const [bookmarked, setBookmarked] = useState(() => getBookmarks().some((b) => b.id === item.id));
+  const [bookmarked, setBookmarked] = useState(() => bookmarkApi.isBookmarked(item.id));
   const platform = PLATFORM_LABELS[item.platform] || { label: item.platform, color: '#6b7280' };
   const isYoutube = item.platform === 'youtube';
   const isShorts = item.platform === 'shorts';
@@ -141,9 +114,15 @@ function FeedCard({ item }) {
   const handleBookmark = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    const added = toggleBookmark(item);
-    setBookmarked(added);
-    logEvent(analytics, added ? 'add_bookmark' : 'remove_bookmark', { item_id: item.id, platform: item.platform });
+    if (bookmarked) {
+      bookmarkApi.remove(item.id);
+      setBookmarked(false);
+      logEvent(analytics, 'remove_bookmark', { item_id: item.id, platform: item.platform });
+    } else {
+      bookmarkApi.add(item);
+      setBookmarked(true);
+      logEvent(analytics, 'add_bookmark', { item_id: item.id, platform: item.platform });
+    }
   };
 
   const handleClick = (e) => {

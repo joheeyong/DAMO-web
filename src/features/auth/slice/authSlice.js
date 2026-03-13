@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { authApi } from '../api/authApi';
+import { bookmarkApi } from '../../search/api/bookmarkApi';
 
 function notifyFlutterAuth(token) {
   try {
@@ -13,6 +14,7 @@ export const googleLogin = createAsyncThunk(
     const data = await authApi.loginWithGoogle(code, redirectUri);
     localStorage.setItem('auth_token', data.token);
     notifyFlutterAuth(data.token);
+    bookmarkApi.sync();
     return data;
   }
 );
@@ -23,6 +25,7 @@ export const naverLogin = createAsyncThunk(
     const data = await authApi.loginWithNaver(code, state, redirectUri);
     localStorage.setItem('auth_token', data.token);
     notifyFlutterAuth(data.token);
+    bookmarkApi.sync();
     return data;
   }
 );
@@ -33,6 +36,7 @@ export const kakaoLogin = createAsyncThunk(
     const data = await authApi.loginWithKakao(code, redirectUri);
     localStorage.setItem('auth_token', data.token);
     notifyFlutterAuth(data.token);
+    bookmarkApi.sync();
     return data;
   }
 );
