@@ -4,7 +4,6 @@ import { searchAll, fetchTrending, fetchMoreTrending, setActiveFilter, setSort, 
 import { analytics, logEvent } from '../../../core/firebase';
 import { searchApi } from '../api/searchApi';
 import FeedCard from '../components/FeedCard';
-import { useTheme } from '../../../hooks/useTheme';
 import './SearchPage.css';
 
 const INTEREST_BANNERS = [
@@ -22,7 +21,6 @@ const INTEREST_BANNERS = [
 
 function SearchPage() {
   const dispatch = useDispatch();
-  const { isDark, setThemeMode, mode } = useTheme();
   const { query, activeFilter, sort, period, items, loading, loadingMore, trendingLoaded } = useSelector(
     (state) => state.search
   );
@@ -308,23 +306,6 @@ function SearchPage() {
             dispatch(clearSearch());
             dispatch(fetchTrending());
           }}>DAMO</h1>
-          <button
-            className="theme-toggle"
-            onClick={() => setThemeMode(isDark ? 'light' : 'dark')}
-            onDoubleClick={() => setThemeMode('system')}
-            aria-label="테마 변경"
-            title={mode === 'system' ? '시스템 설정' : isDark ? '다크 모드' : '라이트 모드'}
-          >
-            {isDark ? (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="5" /><line x1="12" y1="1" x2="12" y2="3" /><line x1="12" y1="21" x2="12" y2="23" /><line x1="4.22" y1="4.22" x2="5.64" y2="5.64" /><line x1="18.36" y1="18.36" x2="19.78" y2="19.78" /><line x1="1" y1="12" x2="3" y2="12" /><line x1="21" y1="12" x2="23" y2="12" /><line x1="4.22" y1="19.78" x2="5.64" y2="18.36" /><line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-              </svg>
-            ) : (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-              </svg>
-            )}
-          </button>
           <form className="search-bar" onSubmit={handleSearch} ref={suggestRef}>
             <div className="search-input-wrap">
               <input

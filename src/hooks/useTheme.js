@@ -12,6 +12,8 @@ function getSystemDark() {
 function applyTheme(mode) {
   const isDark = mode === 'dark' || (mode === 'system' && getSystemDark());
   document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  // Notify Flutter app of theme change
+  try { window.DamoTheme?.postMessage(isDark ? 'dark' : 'light'); } catch (_) {}
 }
 
 export function useTheme() {
