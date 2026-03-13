@@ -156,14 +156,7 @@
   left: 0;
   right: 0;
   z-index: 99;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
   transition: transform 0.2s ease;
-}
-
-.search-filters::-webkit-scrollbar {
-  display: none;
 }
 
 .filters-inner {
@@ -172,6 +165,13 @@
   display: flex;
   gap: 6px;
   padding: 10px 20px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.filters-inner::-webkit-scrollbar {
+  display: none;
 }
 
 .filter-chip {
@@ -229,8 +229,10 @@
 .sort-bar {
   display: flex;
   gap: 4px;
-  padding: 6px 16px 8px;
+  padding: 4px 20px 6px;
   background: white;
+  max-width: 700px;
+  margin: 0 auto;
 }
 
 .sort-btn {
