@@ -268,7 +268,10 @@ function SearchPage() {
             </>
           )}
         </div>
-        {query && items.length > 0 && (
+      </div>
+
+      <main className="search-feed" style={headerHeight && filterHeight ? { paddingTop: headerHeight + filterHeight + 16 } : undefined}>
+        {query && items.length > 0 && !loading && (
           <div className="sort-bar">
             <button
               className={`sort-btn ${sort === 'sim' ? 'active' : ''}`}
@@ -284,9 +287,6 @@ function SearchPage() {
             </button>
           </div>
         )}
-      </div>
-
-      <main className="search-feed" style={headerHeight && filterHeight ? { paddingTop: headerHeight + filterHeight + 16 } : undefined}>
         {loading && (
           <div className="search-loading">
             <div className="spinner" />
