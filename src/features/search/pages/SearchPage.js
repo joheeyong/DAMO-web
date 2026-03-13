@@ -28,6 +28,10 @@ function SearchPage() {
   const [inputValue, setInputValue] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
+  const [searchHistory, setSearchHistory] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('damo_search_history') || '[]'); } catch { return []; }
+  });
   const [selectedIdx, setSelectedIdx] = useState(-1);
   const suggestTimer = useRef(null);
   const suggestRef = useRef(null);
@@ -134,6 +138,29 @@ function SearchPage() {
     [loading, loadingMore, query, dispatch]
   );
 
+  const saveToHistory = useCallback((term) => {
+    setSearchHistory((prev) => {
+      const filtered = prev.filter((t) => t !== term);
+      const next = [term, ...filtered].slice(0, 15);
+      localStorage.setItem('damo_search_history', JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  const removeFromHistory = useCallback((term) => {
+    setSearchHistory((prev) => {
+      const next = prev.filter((t) => t !== term);
+      localStorage.setItem('damo_search_history', JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  const clearHistory = useCallback(() => {
+    setSearchHistory([]);
+    localStorage.removeItem('damo_search_history');
+    setShowHistory(false);
+  }, []);
+
   const handleInputChange = useCallback((e) => {
     const val = e.target.value;
     setInputValue(val);
@@ -142,8 +169,10 @@ function SearchPage() {
     if (val.trim().length < 1) {
       setSuggestions([]);
       setShowSuggestions(false);
+      setShowHistory(true);
       return;
     }
+    setShowHistory(false);
     suggestTimer.current = setTimeout(async () => {
       try {
         const data = await searchApi.suggest(val.trim());
@@ -158,10 +187,12 @@ function SearchPage() {
   const handleSuggestionClick = useCallback((keyword) => {
     setInputValue(keyword);
     setShowSuggestions(false);
+    setShowHistory(false);
     setSuggestions([]);
+    saveToHistory(keyword);
     logEvent(analytics, 'search', { search_term: keyword });
     dispatch(searchAll({ query: keyword, sort, period }));
-  }, [dispatch, sort, period]);
+  }, [dispatch, sort, period, saveToHistory]);
 
   const handleInputKeyDown = useCallback((e) => {
     if (!showSuggestions || suggestions.length === 0) return;
@@ -179,11 +210,12 @@ function SearchPage() {
     }
   }, [showSuggestions, suggestions, selectedIdx, handleSuggestionClick]);
 
-  // Close suggestions when clicking outside
+  // Close suggestions/history when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (suggestRef.current && !suggestRef.current.contains(e.target)) {
         setShowSuggestions(false);
+        setShowHistory(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -193,7 +225,9 @@ function SearchPage() {
   const handleSearch = (e) => {
     e.preventDefault();
     setShowSuggestions(false);
+    setShowHistory(false);
     if (!inputValue.trim()) return;
+    saveToHistory(inputValue.trim());
     logEvent(analytics, 'search', { search_term: inputValue.trim() });
     dispatch(searchAll({ query: inputValue.trim(), sort, period }));
   };
@@ -280,7 +314,10 @@ function SearchPage() {
                 value={inputValue}
                 onChange={handleInputChange}
                 onKeyDown={handleInputKeyDown}
-                onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+                onFocus={() => {
+                  if (inputValue.trim().length > 0 && suggestions.length > 0) setShowSuggestions(true);
+                  else if (inputValue.trim().length === 0 && searchHistory.length > 0) setShowHistory(true);
+                }}
                 autoComplete="off"
               />
               {showSuggestions && suggestions.length > 0 && (
@@ -299,6 +336,29 @@ function SearchPage() {
                     </li>
                   ))}
                 </ul>
+              )}
+              {showHistory && !showSuggestions && searchHistory.length > 0 && (
+                <div className="suggest-dropdown history-dropdown">
+                  <div className="history-header">
+                    <span className="history-title">최근 검색어</span>
+                    <button className="history-clear" onMouseDown={clearHistory}>전체 삭제</button>
+                  </div>
+                  <ul>
+                    {searchHistory.map((term) => (
+                      <li key={term} className="suggest-item history-item">
+                        <div className="history-item-left" onMouseDown={() => handleSuggestionClick(term)}>
+                          <svg className="suggest-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+                          </svg>
+                          <span>{term}</span>
+                        </div>
+                        <button className="history-remove" onMouseDown={(e) => { e.stopPropagation(); removeFromHistory(term); }} aria-label="삭제">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
             </div>
             <button type="submit" disabled={loading} aria-label="검색">
