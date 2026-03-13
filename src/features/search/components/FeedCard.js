@@ -96,8 +96,37 @@ function VideoPreview({ item, isShorts }) {
   );
 }
 
+function getBookmarks() {
+  try { return JSON.parse(localStorage.getItem('damo_bookmarks') || '[]'); } catch { return []; }
+}
+
+function toggleBookmark(item) {
+  const bookmarks = getBookmarks();
+  const idx = bookmarks.findIndex((b) => b.id === item.id);
+  if (idx >= 0) {
+    bookmarks.splice(idx, 1);
+  } else {
+    bookmarks.unshift({
+      id: item.id,
+      platform: item.platform,
+      title: item.title,
+      description: item.description,
+      link: item.link,
+      image: item.image,
+      author: item.author,
+      date: item.date,
+      extra: item.extra,
+      savedAt: new Date().toISOString(),
+    });
+  }
+  localStorage.setItem('damo_bookmarks', JSON.stringify(bookmarks));
+  window.dispatchEvent(new Event('bookmarks-changed'));
+  return idx < 0; // true if added
+}
+
 function FeedCard({ item }) {
   const navigate = useNavigate();
+  const [bookmarked, setBookmarked] = useState(() => getBookmarks().some((b) => b.id === item.id));
   const platform = PLATFORM_LABELS[item.platform] || { label: item.platform, color: '#6b7280' };
   const isYoutube = item.platform === 'youtube';
   const isShorts = item.platform === 'shorts';
@@ -108,6 +137,14 @@ function FeedCard({ item }) {
   const isVideo = isYoutube || isShorts;
 
   const inApp = !!window.DamoReady; // Flutter WebView has DamoReady channel
+
+  const handleBookmark = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const added = toggleBookmark(item);
+    setBookmarked(added);
+    logEvent(analytics, added ? 'add_bookmark' : 'remove_bookmark', { item_id: item.id, platform: item.platform });
+  };
 
   const handleClick = (e) => {
     e.preventDefault();
@@ -214,6 +251,12 @@ function FeedCard({ item }) {
           </div>
         </div>
       )}
+
+      <button className={`feed-bookmark ${bookmarked ? 'active' : ''}`} onClick={handleBookmark} aria-label="북마크">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill={bookmarked ? '#6366f1' : 'none'} stroke={bookmarked ? '#6366f1' : '#aeaeb2'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+        </svg>
+      </button>
     </a>
   );
 }

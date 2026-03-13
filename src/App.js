@@ -6,6 +6,7 @@ import MapsPage from './features/maps/pages/MapsPage';
 import PushPage from './features/push/pages/PushPage';
 import SearchPage from './features/search/pages/SearchPage';
 import ContentDetailPage from './features/search/pages/ContentDetailPage';
+import BookmarksPage from './features/search/pages/BookmarksPage';
 import TermsPage from './features/legal/pages/TermsPage';
 import PrivacyPage from './features/legal/pages/PrivacyPage';
 import LoginPage from './features/auth/pages/LoginPage';
@@ -17,7 +18,7 @@ import OnboardingInterestsPage from './features/auth/pages/OnboardingInterestsPa
 import BottomNav from './components/BottomNav';
 import { fetchMe } from './features/auth/slice/authSlice';
 
-const SHOW_NAV_PATHS = ['/search', '/maps', '/profile', '/login'];
+const SHOW_NAV_PATHS = ['/search', '/maps', '/profile', '/login', '/bookmarks'];
 
 function App() {
   const dispatch = useDispatch();
@@ -38,6 +39,7 @@ function App() {
         <Route path="/" element={<LandingPage />} />
         <Route path="/search" element={<SearchPage />} />
         <Route path="/content" element={<ContentDetailPage />} />
+        <Route path="/bookmarks" element={<BookmarksPage />} />
         <Route path="/maps" element={<MapsPage />} />
         <Route path="/push" element={<PushPage />} />
         <Route path="/terms" element={<TermsPage />} />

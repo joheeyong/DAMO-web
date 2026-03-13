@@ -1,0 +1,67 @@
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import FeedCard from '../components/FeedCard';
+import './BookmarksPage.css';
+
+function getBookmarks() {
+  try { return JSON.parse(localStorage.getItem('damo_bookmarks') || '[]'); } catch { return []; }
+}
+
+function BookmarksPage() {
+  const navigate = useNavigate();
+  const [bookmarks, setBookmarks] = useState(getBookmarks);
+
+  useEffect(() => {
+    const onChanged = () => setBookmarks(getBookmarks());
+    window.addEventListener('bookmarks-changed', onChanged);
+    return () => window.removeEventListener('bookmarks-changed', onChanged);
+  }, []);
+
+  const clearAll = useCallback(() => {
+    if (!window.confirm('저장된 북마크를 모두 삭제할까요?')) return;
+    localStorage.removeItem('damo_bookmarks');
+    setBookmarks([]);
+    window.dispatchEvent(new Event('bookmarks-changed'));
+  }, []);
+
+  return (
+    <div className="bookmarks-page">
+      <header className="bookmarks-header">
+        <div className="bookmarks-header-inner">
+          <button className="bookmarks-back" onClick={() => navigate('/search')} aria-label="뒤로">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+          <h1 className="bookmarks-title">저장한 콘텐츠</h1>
+          {bookmarks.length > 0 && (
+            <button className="bookmarks-clear" onClick={clearAll}>전체 삭제</button>
+          )}
+        </div>
+      </header>
+
+      <main className="bookmarks-feed">
+        {bookmarks.length === 0 ? (
+          <div className="bookmarks-empty">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d1d1d6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+            </svg>
+            <p className="bookmarks-empty-title">저장한 콘텐츠가 없어요</p>
+            <p className="bookmarks-empty-desc">마음에 드는 콘텐츠의 북마크 버튼을 눌러보세요</p>
+          </div>
+        ) : (
+          <>
+            <p className="bookmarks-count">{bookmarks.length}개의 저장된 콘텐츠</p>
+            <div className="bookmarks-grid">
+              {bookmarks.map((item) => (
+                <FeedCard key={item.id} item={item} />
+              ))}
+            </div>
+          </>
+        )}
+      </main>
+    </div>
+  );
+}
+
+export default BookmarksPage;

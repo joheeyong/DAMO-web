@@ -9,6 +9,7 @@ function BottomNav() {
 
   const tabs = [
     { key: 'search', label: '홈', icon: HomeIcon, path: '/search' },
+    { key: 'bookmarks', label: '저장', icon: BookmarkIcon, path: '/bookmarks' },
     { key: 'maps', label: '지도', icon: MapIcon, path: '/maps' },
     { key: 'profile', label: user ? '내 정보' : '로그인', icon: user ? ProfileIcon : LoginIcon, path: user ? '/profile' : '/login' },
   ];
@@ -41,6 +42,14 @@ function HomeIcon({ active }) {
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={active ? '#6366f1' : '#8e8e93'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
       <polyline points="9 22 9 12 15 12 15 22" />
+    </svg>
+  );
+}
+
+function BookmarkIcon({ active }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill={active ? '#6366f1' : 'none'} stroke={active ? '#6366f1' : '#8e8e93'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
     </svg>
   );
 }
