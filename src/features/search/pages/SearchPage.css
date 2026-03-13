@@ -225,6 +225,31 @@
   align-self: center;
 }
 
+/* Sort toggle */
+.sort-bar {
+  display: flex;
+  gap: 4px;
+  padding: 6px 16px 8px;
+  background: white;
+}
+
+.sort-btn {
+  padding: 4px 10px;
+  background: none;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.78rem;
+  color: #8e8e93;
+  cursor: pointer;
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+.sort-btn.active {
+  color: #1d1d1f;
+  font-weight: 600;
+}
+
 .filter-chip-nblog {
   background: rgba(3, 199, 90, 0.1);
   border-color: rgba(3, 199, 90, 0.3);

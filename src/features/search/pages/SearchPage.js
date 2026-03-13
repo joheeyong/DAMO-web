@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { searchAll, fetchTrending, fetchMoreTrending, setActiveFilter, clearSearch, FILTERS } from '../slice/searchSlice';
+import { searchAll, fetchTrending, fetchMoreTrending, setActiveFilter, setSort, clearSearch, FILTERS } from '../slice/searchSlice';
 import { analytics, logEvent } from '../../../core/firebase';
 import FeedCard from '../components/FeedCard';
 import './SearchPage.css';
@@ -20,7 +20,7 @@ const INTEREST_BANNERS = [
 
 function SearchPage() {
   const dispatch = useDispatch();
-  const { query, activeFilter, items, loading, loadingMore, trendingLoaded } = useSelector(
+  const { query, activeFilter, sort, items, loading, loadingMore, trendingLoaded } = useSelector(
     (state) => state.search
   );
   const { user } = useSelector((state) => state.auth);
@@ -132,7 +132,14 @@ function SearchPage() {
     e.preventDefault();
     if (!inputValue.trim()) return;
     logEvent(analytics, 'search', { search_term: inputValue.trim() });
-    dispatch(searchAll({ query: inputValue.trim() }));
+    dispatch(searchAll({ query: inputValue.trim(), sort }));
+  };
+
+  const handleSortChange = (newSort) => {
+    dispatch(setSort(newSort));
+    if (query) {
+      dispatch(searchAll({ query, sort: newSort }));
+    }
   };
 
   const filteredItems =
@@ -252,7 +259,7 @@ function SearchPage() {
                   onClick={() => {
                     logEvent(analytics, 'select_filter', { filter: `interest:${interest}` });
                     setInputValue(interest);
-                    dispatch(searchAll({ query: interest }));
+                    dispatch(searchAll({ query: interest, sort }));
                   }}
                 >
                   {interest}
@@ -261,6 +268,22 @@ function SearchPage() {
             </>
           )}
         </div>
+        {query && items.length > 0 && (
+          <div className="sort-bar">
+            <button
+              className={`sort-btn ${sort === 'sim' ? 'active' : ''}`}
+              onClick={() => handleSortChange('sim')}
+            >
+              정확도순
+            </button>
+            <button
+              className={`sort-btn ${sort === 'date' ? 'active' : ''}`}
+              onClick={() => handleSortChange('date')}
+            >
+              최신순
+            </button>
+          </div>
+        )}
       </div>
 
       <main className="search-feed" style={headerHeight && filterHeight ? { paddingTop: headerHeight + filterHeight + 16 } : undefined}>

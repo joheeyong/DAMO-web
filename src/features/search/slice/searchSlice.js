@@ -168,8 +168,8 @@ async function applyRanking(items) {
 
 export const searchAll = createAsyncThunk(
   'search/searchAll',
-  async ({ query, display = 5 }) => {
-    const raw = await searchApi.searchAll(query, display);
+  async ({ query, display = 5, sort = 'sim' }) => {
+    const raw = await searchApi.searchAll(query, display, sort);
     let items = normalizeItems(raw);
 
     // Record search & apply ranking for logged-in users
@@ -179,7 +179,7 @@ export const searchAll = createAsyncThunk(
       items = await applyRanking(items);
     }
 
-    return { query, items };
+    return { query, items, sort };
   }
 );
 
@@ -300,6 +300,7 @@ const searchSlice = createSlice({
   initialState: {
     query: '',
     activeFilter: 'all',
+    sort: 'sim',
     items: [],
     loading: false,
     loadingMore: false,
@@ -310,9 +311,13 @@ const searchSlice = createSlice({
     setActiveFilter: (state, action) => {
       state.activeFilter = action.payload;
     },
+    setSort: (state, action) => {
+      state.sort = action.payload;
+    },
     clearSearch: (state) => {
       state.query = '';
       state.activeFilter = 'all';
+      state.sort = 'sim';
     },
   },
   extraReducers: (builder) => {
@@ -324,6 +329,7 @@ const searchSlice = createSlice({
         state.loading = false;
         state.query = action.payload.query;
         state.items = action.payload.items;
+        state.sort = action.payload.sort || 'sim';
         state.activeFilter = 'all';
       })
       .addCase(searchAll.rejected, (state) => {
@@ -357,5 +363,5 @@ const searchSlice = createSlice({
   },
 });
 
-export const { setActiveFilter, clearSearch } = searchSlice.actions;
+export const { setActiveFilter, setSort, clearSearch } = searchSlice.actions;
 export default searchSlice.reducer;
