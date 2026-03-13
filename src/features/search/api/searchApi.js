@@ -13,4 +13,7 @@ export const searchApi = {
 
   trending: (display = 10) =>
     apiClient.get(`/api/search/trending?display=${display}`),
+
+  suggest: (q) =>
+    apiClient.get(`/api/search/suggest?q=${encodeURIComponent(q)}`),
 };

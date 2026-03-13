@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { searchAll, fetchTrending, fetchMoreTrending, setActiveFilter, setSort, setPeriod, clearSearch, FILTERS } from '../slice/searchSlice';
 import { analytics, logEvent } from '../../../core/firebase';
+import { searchApi } from '../api/searchApi';
 import FeedCard from '../components/FeedCard';
 import './SearchPage.css';
 
@@ -25,6 +26,11 @@ function SearchPage() {
   );
   const { user } = useSelector((state) => state.auth);
   const [inputValue, setInputValue] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [selectedIdx, setSelectedIdx] = useState(-1);
+  const suggestTimer = useRef(null);
+  const suggestRef = useRef(null);
   const [headerHidden, setHeaderHidden] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
   const [filterHeight, setFilterHeight] = useState(0);
@@ -128,8 +134,65 @@ function SearchPage() {
     [loading, loadingMore, query, dispatch]
   );
 
+  const handleInputChange = useCallback((e) => {
+    const val = e.target.value;
+    setInputValue(val);
+    setSelectedIdx(-1);
+    if (suggestTimer.current) clearTimeout(suggestTimer.current);
+    if (val.trim().length < 1) {
+      setSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+    suggestTimer.current = setTimeout(async () => {
+      try {
+        const data = await searchApi.suggest(val.trim());
+        setSuggestions(data || []);
+        setShowSuggestions((data || []).length > 0);
+      } catch {
+        setSuggestions([]);
+      }
+    }, 200);
+  }, []);
+
+  const handleSuggestionClick = useCallback((keyword) => {
+    setInputValue(keyword);
+    setShowSuggestions(false);
+    setSuggestions([]);
+    logEvent(analytics, 'search', { search_term: keyword });
+    dispatch(searchAll({ query: keyword, sort, period }));
+  }, [dispatch, sort, period]);
+
+  const handleInputKeyDown = useCallback((e) => {
+    if (!showSuggestions || suggestions.length === 0) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setSelectedIdx((prev) => (prev + 1) % suggestions.length);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setSelectedIdx((prev) => (prev <= 0 ? suggestions.length - 1 : prev - 1));
+    } else if (e.key === 'Enter' && selectedIdx >= 0) {
+      e.preventDefault();
+      handleSuggestionClick(suggestions[selectedIdx]);
+    } else if (e.key === 'Escape') {
+      setShowSuggestions(false);
+    }
+  }, [showSuggestions, suggestions, selectedIdx, handleSuggestionClick]);
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (suggestRef.current && !suggestRef.current.contains(e.target)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handleSearch = (e) => {
     e.preventDefault();
+    setShowSuggestions(false);
     if (!inputValue.trim()) return;
     logEvent(analytics, 'search', { search_term: inputValue.trim() });
     dispatch(searchAll({ query: inputValue.trim(), sort, period }));
@@ -209,13 +272,35 @@ function SearchPage() {
             dispatch(clearSearch());
             dispatch(fetchTrending());
           }}>DAMO</h1>
-          <form className="search-bar" onSubmit={handleSearch}>
-            <input
-              type="text"
-              placeholder="검색어를 입력하세요"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-            />
+          <form className="search-bar" onSubmit={handleSearch} ref={suggestRef}>
+            <div className="search-input-wrap">
+              <input
+                type="text"
+                placeholder="검색어를 입력하세요"
+                value={inputValue}
+                onChange={handleInputChange}
+                onKeyDown={handleInputKeyDown}
+                onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+                autoComplete="off"
+              />
+              {showSuggestions && suggestions.length > 0 && (
+                <ul className="suggest-dropdown">
+                  {suggestions.map((s, i) => (
+                    <li
+                      key={s}
+                      className={`suggest-item ${i === selectedIdx ? 'selected' : ''}`}
+                      onMouseDown={() => handleSuggestionClick(s)}
+                      onMouseEnter={() => setSelectedIdx(i)}
+                    >
+                      <svg className="suggest-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                      </svg>
+                      <span dangerouslySetInnerHTML={{ __html: s.replace(new RegExp(`(${inputValue.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'), '<b>$1</b>') }} />
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
             <button type="submit" disabled={loading} aria-label="검색">
               {loading ? (
                 <div className="spinner-small" />
