@@ -4,6 +4,20 @@ import { bookmarkApi } from '../api/bookmarkApi';
 import FeedCard from '../components/FeedCard';
 import './BookmarksPage.css';
 
+function ConfirmDialog({ message, onConfirm, onCancel }) {
+  return (
+    <div className="confirm-overlay" onMouseDown={onCancel}>
+      <div className="confirm-dialog" onMouseDown={(e) => e.stopPropagation()}>
+        <p className="confirm-message">{message}</p>
+        <div className="confirm-actions">
+          <button className="confirm-cancel" onClick={onCancel}>취소</button>
+          <button className="confirm-ok" onClick={onConfirm}>삭제</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function getLocalBookmarks() {
   try { return JSON.parse(localStorage.getItem('damo_bookmarks') || '[]'); } catch { return []; }
 }
@@ -12,6 +26,7 @@ function BookmarksPage() {
   const navigate = useNavigate();
   const [bookmarks, setBookmarks] = useState(getLocalBookmarks);
   const [loading, setLoading] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   // On mount: sync with server if logged in
   useEffect(() => {
@@ -39,8 +54,8 @@ function BookmarksPage() {
     return () => window.removeEventListener('bookmarks-changed', onChanged);
   }, []);
 
-  const clearAll = useCallback(async () => {
-    if (!window.confirm('저장된 북마크를 모두 삭제할까요?')) return;
+  const handleClearAll = useCallback(async () => {
+    setShowConfirm(false);
     await bookmarkApi.clearAll();
     setBookmarks([]);
   }, []);
@@ -56,7 +71,7 @@ function BookmarksPage() {
           </button>
           <h1 className="bookmarks-title">저장한 콘텐츠</h1>
           {bookmarks.length > 0 && (
-            <button className="bookmarks-clear" onClick={clearAll}>전체 삭제</button>
+            <button className="bookmarks-clear" onClick={() => setShowConfirm(true)}>전체 삭제</button>
           )}
         </div>
       </header>
@@ -85,6 +100,14 @@ function BookmarksPage() {
           </>
         )}
       </main>
+
+      {showConfirm && (
+        <ConfirmDialog
+          message="저장된 북마크를 모두 삭제할까요?"
+          onConfirm={handleClearAll}
+          onCancel={() => setShowConfirm(false)}
+        />
+      )}
     </div>
   );
 }
