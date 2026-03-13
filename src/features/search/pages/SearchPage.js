@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { searchAll, fetchTrending, fetchMoreTrending, setActiveFilter, setSort, setPeriod, clearSearch, FILTERS } from '../slice/searchSlice';
+import { searchAll, fetchTrending, fetchMoreTrending, setActiveFilter, setSort, setPeriod, clearSearch } from '../slice/searchSlice';
+import { FILTERS } from '../../../shared/constants/filters';
 import { analytics, logEvent } from '../../../core/firebase';
 import { searchApi } from '../api/searchApi';
 import FeedCard from '../components/FeedCard';

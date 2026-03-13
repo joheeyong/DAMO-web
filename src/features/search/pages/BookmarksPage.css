@@ -100,61 +100,6 @@
   color: var(--text-muted);
 }
 
-/* Confirm dialog */
-.confirm-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-
-.confirm-dialog {
-  background: var(--bg-card);
-  border-radius: 16px;
-  padding: 24px;
-  max-width: 300px;
-  width: 100%;
-  text-align: center;
-  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
-}
-
-.confirm-message {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 20px;
-}
-
-.confirm-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.confirm-cancel,
-.confirm-ok {
-  flex: 1;
-  padding: 10px;
-  border: none;
-  border-radius: 10px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.confirm-cancel {
-  background: var(--bg-chip);
-  color: var(--text-primary);
-}
-
-.confirm-ok {
-  background: #ff3b30;
-  color: #fff;
-}
-
 @media (max-width: 640px) {
   .bookmarks-header {
     padding: 10px 14px;

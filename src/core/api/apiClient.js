@@ -16,6 +16,20 @@ async function request(path, options = {}) {
   }
 
   const response = await fetch(url, config);
+
+  if (!response.ok) {
+    if (response.status === 401) {
+      localStorage.removeItem('auth_token');
+      if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
+    }
+    const message = await response.text().catch(() => response.statusText);
+    const error = new Error(message || `Request failed with status ${response.status}`);
+    error.status = response.status;
+    throw error;
+  }
+
   return response.json();
 }
 

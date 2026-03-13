@@ -2,40 +2,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { updateInterests } from '../slice/authSlice';
+import { INTEREST_OPTIONS } from '../../../shared/constants/interests';
 import './OnboardingInterestsPage.css';
-
-const INTEREST_OPTIONS = [
-  { key: '맛집', emoji: '🍽️' },
-  { key: '여행', emoji: '✈️' },
-  { key: 'IT', emoji: '💻' },
-  { key: '영화', emoji: '🎬' },
-  { key: '음악', emoji: '🎵' },
-  { key: '패션', emoji: '👗' },
-  { key: '게임', emoji: '🎮' },
-  { key: '요리', emoji: '🍳' },
-  { key: '운동', emoji: '💪' },
-  { key: '뷰티', emoji: '💄' },
-  { key: '일상', emoji: '📸' },
-  { key: '리뷰', emoji: '⭐' },
-  { key: '먹방', emoji: '🤤' },
-  { key: '캠핑', emoji: '⛺' },
-  { key: '인테리어', emoji: '🏠' },
-  { key: '자동차', emoji: '🚗' },
-  { key: '펫', emoji: '🐶' },
-  { key: '공부', emoji: '📚' },
-  { key: '재테크', emoji: '💰' },
-  { key: '드라마', emoji: '📺' },
-  { key: '축구', emoji: '⚽' },
-  { key: '야구', emoji: '⚾' },
-  { key: '농구', emoji: '🏀' },
-  { key: '헬스', emoji: '🏋️' },
-  { key: '사진', emoji: '📷' },
-  { key: '독서', emoji: '📖' },
-  { key: '코딩', emoji: '👨‍💻' },
-  { key: '주식', emoji: '📈' },
-  { key: '부동산', emoji: '🏢' },
-  { key: '육아', emoji: '👶' },
-];
 
 function OnboardingInterestsPage() {
   const dispatch = useDispatch();

@@ -2,35 +2,10 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { analytics, logEvent } from '../../../core/firebase';
 import { activityApi } from '../api/activityApi';
-import { bookmarkApi } from '../api/bookmarkApi';
+import { bookmarkApi } from '../../../shared/api/bookmarkApi';
+import { PLATFORM_LABELS } from '../../../shared/constants/platforms';
+import { getVideoId, isFlutterApp } from '../../../shared/utils/helpers';
 import './FeedCard.css';
-
-const PLATFORM_LABELS = {
-  youtube: { label: 'YouTube', color: '#ff0000' },
-  blog: { label: 'N 블로그', color: '#03c75a' },
-  news: { label: 'N 뉴스', color: '#03c75a' },
-  cafe: { label: 'N 카페', color: '#03c75a' },
-  shop: { label: 'N 쇼핑', color: '#00b493' },
-  image: { label: 'N 이미지', color: '#03c75a' },
-  kin: { label: '지식iN', color: '#03c75a' },
-  book: { label: 'N 도서', color: '#03c75a' },
-  webkr: { label: 'N 웹', color: '#03c75a' },
-  'kakao-blog': { label: 'D 블로그', color: '#FEE500', textColor: '#3C1E1E' },
-  'kakao-cafe': { label: 'D 카페', color: '#FEE500', textColor: '#3C1E1E' },
-  'kakao-web': { label: 'D 웹', color: '#FEE500', textColor: '#3C1E1E' },
-  'kakao-video': { label: 'D 영상', color: '#FEE500', textColor: '#3C1E1E' },
-  'kakao-image': { label: 'D 이미지', color: '#FEE500', textColor: '#3C1E1E' },
-  reddit: { label: 'Reddit', color: '#ff4500' },
-  shorts: { label: 'Shorts', color: '#ff0000' },
-  instagram: { label: 'Instagram', color: '#E1306C' },
-};
-
-function getVideoId(item) {
-  if (item.platform === 'shorts') {
-    return item.id.replace('shorts-', '');
-  }
-  return item.id.replace('yt-', '');
-}
 
 function VideoPreview({ item, isShorts }) {
   const [playing, setPlaying] = useState(false);
@@ -109,7 +84,7 @@ function FeedCard({ item }) {
   const hasImage = !!item.image;
   const isVideo = isYoutube || isShorts;
 
-  const inApp = !!window.DamoReady; // Flutter WebView has DamoReady channel
+  const inApp = isFlutterApp();
 
   const handleBookmark = (e) => {
     e.preventDefault();

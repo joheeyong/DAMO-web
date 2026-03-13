@@ -1,26 +1,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { bookmarkApi } from '../api/bookmarkApi';
+import { bookmarkApi } from '../../../shared/api/bookmarkApi';
+import { getLocalBookmarks } from '../../../shared/utils/helpers';
+import ConfirmDialog from '../../../shared/components/ConfirmDialog';
 import FeedCard from '../components/FeedCard';
 import './BookmarksPage.css';
-
-function ConfirmDialog({ message, onConfirm, onCancel }) {
-  return (
-    <div className="confirm-overlay" onMouseDown={onCancel}>
-      <div className="confirm-dialog" onMouseDown={(e) => e.stopPropagation()}>
-        <p className="confirm-message">{message}</p>
-        <div className="confirm-actions">
-          <button className="confirm-cancel" onClick={onCancel}>취소</button>
-          <button className="confirm-ok" onClick={onConfirm}>삭제</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function getLocalBookmarks() {
-  try { return JSON.parse(localStorage.getItem('damo_bookmarks') || '[]'); } catch { return []; }
-}
 
 function BookmarksPage() {
   const navigate = useNavigate();

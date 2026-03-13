@@ -1,32 +1,9 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useEffect, useRef, useState } from 'react';
 import { toMobileUrl, IFRAME_BLOCKED } from '../utils/mobileUrl';
+import { PLATFORM_LABELS } from '../../../shared/constants/platforms';
+import { getVideoId } from '../../../shared/utils/helpers';
 import './ContentDetailPage.css';
-
-const PLATFORM_LABELS = {
-  youtube: { label: 'YouTube', color: '#ff0000' },
-  shorts: { label: 'Shorts', color: '#ff0000' },
-  blog: { label: 'N 블로그', color: '#03c75a' },
-  news: { label: 'N 뉴스', color: '#03c75a' },
-  cafe: { label: 'N 카페', color: '#03c75a' },
-  shop: { label: 'N 쇼핑', color: '#00b493' },
-  image: { label: 'N 이미지', color: '#03c75a' },
-  kin: { label: '지식iN', color: '#03c75a' },
-  book: { label: 'N 도서', color: '#03c75a' },
-  webkr: { label: 'N 웹', color: '#03c75a' },
-  'kakao-blog': { label: 'D 블로그', color: '#FEE500', textColor: '#3C1E1E' },
-  'kakao-cafe': { label: 'D 카페', color: '#FEE500', textColor: '#3C1E1E' },
-  'kakao-web': { label: 'D 웹', color: '#FEE500', textColor: '#3C1E1E' },
-  'kakao-video': { label: 'D 영상', color: '#FEE500', textColor: '#3C1E1E' },
-  'kakao-image': { label: 'D 이미지', color: '#FEE500', textColor: '#3C1E1E' },
-  reddit: { label: 'Reddit', color: '#ff4500' },
-  instagram: { label: 'Instagram', color: '#E1306C' },
-};
-
-function getVideoId(item) {
-  if (item.platform === 'shorts') return item.id.replace('shorts-', '');
-  return item.id.replace('yt-', '');
-}
 
 function ContentDetailPage() {
   const location = useLocation();

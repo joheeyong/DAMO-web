@@ -1,33 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { searchApi } from '../api/searchApi';
 import { activityApi } from '../api/activityApi';
-
-const FILTERS = [
-  { key: 'all', label: '전체' },
-  { key: 'shorts', label: 'Shorts' },
-  { key: 'youtube', label: '유튜브' },
-  { key: 'blog', label: 'N 블로그' },
-  { key: 'news', label: 'N 뉴스' },
-  { key: 'cafe', label: 'N 카페' },
-  { key: 'shop', label: 'N 쇼핑' },
-  { key: 'image', label: 'N 이미지' },
-  { key: 'kin', label: '지식iN' },
-  { key: 'book', label: 'N 도서' },
-  { key: 'webkr', label: 'N 웹' },
-  { key: 'kakao-blog', label: 'D 블로그' },
-  { key: 'kakao-cafe', label: 'D 카페' },
-  { key: 'kakao-web', label: 'D 웹' },
-  { key: 'kakao-video', label: 'D 영상' },
-  { key: 'kakao-image', label: 'D 이미지' },
-  { key: 'reddit', label: 'Reddit' },
-  { key: 'instagram', label: 'Instagram' },
-];
-
-export { FILTERS };
-
-function stripHtml(html) {
-  return html?.replace(/<[^>]*>/g, '') || '';
-}
+import { stripHtml } from '../../../shared/utils/helpers';
 
 function normalizeItems(rawResults) {
   const items = [];
@@ -140,12 +114,6 @@ function normalizeItems(rawResults) {
         });
       });
     }
-  }
-
-  // Shuffle for mixed feed
-  for (let i = items.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [items[i], items[j]] = [items[j], items[i]];
   }
 
   return items;
@@ -280,12 +248,11 @@ const VIRAL_KEYWORDS = [
   '인테리어', '자동차', '펫', '공부', '재테크', '드라마', '축구',
 ];
 
-let usedKeywords = [];
-
 export const fetchMoreTrending = createAsyncThunk(
   'search/fetchMoreTrending',
-  async (_, { getState }) => {
-    const { auth } = getState();
+  async (_, { getState, dispatch }) => {
+    const { auth, search } = getState();
+    const usedKeywords = search.usedKeywords;
     const userInterests = auth.user?.interests
       ? auth.user.interests.split(',').filter(Boolean)
       : [];
@@ -295,10 +262,12 @@ export const fetchMoreTrending = createAsyncThunk(
       ? [...userInterests, ...VIRAL_KEYWORDS]
       : VIRAL_KEYWORDS;
 
-    if (usedKeywords.length >= pool.length) {
-      usedKeywords = [];
+    let currentUsed = usedKeywords;
+    if (currentUsed.length >= pool.length) {
+      dispatch(searchSlice.actions.resetUsedKeywords());
+      currentUsed = [];
     }
-    const available = pool.filter((k) => !usedKeywords.includes(k));
+    const available = pool.filter((k) => !currentUsed.includes(k));
 
     // 70% chance to pick from user interests if available
     let keyword;
@@ -308,13 +277,12 @@ export const fetchMoreTrending = createAsyncThunk(
     } else {
       keyword = available[Math.floor(Math.random() * available.length)];
     }
-    usedKeywords.push(keyword);
 
     // searchAll already includes shorts — no extra API calls needed
     const raw = await searchApi.searchAll(keyword, 5);
     let items = normalizeItems(raw);
     items = await applyRanking(items);
-    return { items };
+    return { items, keyword };
   }
 );
 
@@ -330,6 +298,7 @@ const searchSlice = createSlice({
     loadingMore: false,
     trendingLoaded: false,
     trendingKeyword: '',
+    usedKeywords: [],
   },
   reducers: {
     setActiveFilter: (state, action) => {
@@ -346,6 +315,10 @@ const searchSlice = createSlice({
       state.activeFilter = 'all';
       state.sort = 'sim';
       state.period = 'all';
+      state.usedKeywords = [];
+    },
+    resetUsedKeywords: (state) => {
+      state.usedKeywords = [];
     },
   },
   extraReducers: (builder) => {
@@ -385,6 +358,9 @@ const searchSlice = createSlice({
         const existingIds = new Set(state.items.map((i) => i.id));
         const newItems = action.payload.items.filter((i) => !existingIds.has(i.id));
         state.items = [...state.items, ...newItems];
+        if (action.payload.keyword) {
+          state.usedKeywords = [...state.usedKeywords, action.payload.keyword];
+        }
       })
       .addCase(fetchMoreTrending.rejected, (state) => {
         state.loadingMore = false;
@@ -392,5 +368,5 @@ const searchSlice = createSlice({
   },
 });
 
-export const { setActiveFilter, setSort, setPeriod, clearSearch } = searchSlice.actions;
+export const { setActiveFilter, setSort, setPeriod, clearSearch, resetUsedKeywords } = searchSlice.actions;
 export default searchSlice.reducer;

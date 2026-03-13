@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { authApi } from '../api/authApi';
-import { bookmarkApi } from '../../search/api/bookmarkApi';
+import { bookmarkApi } from '../../../shared/api/bookmarkApi';
 
 function notifyFlutterAuth(token) {
   try {
