@@ -228,11 +228,18 @@
 /* Sort toggle */
 .sort-bar {
   display: flex;
-  gap: 4px;
+  align-items: center;
+  justify-content: space-between;
   padding: 4px 20px 6px;
   background: white;
   max-width: 700px;
   margin: 0 auto;
+}
+
+.sort-group,
+.period-group {
+  display: flex;
+  gap: 2px;
 }
 
 .sort-btn {
@@ -249,6 +256,25 @@
 
 .sort-btn.active {
   color: #1d1d1f;
+  font-weight: 600;
+}
+
+.period-btn {
+  padding: 3px 8px;
+  background: #f0f0f2;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  font-size: 0.72rem;
+  color: #8e8e93;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.period-btn.active {
+  background: rgba(99, 102, 241, 0.1);
+  border-color: rgba(99, 102, 241, 0.3);
+  color: #6366f1;
   font-weight: 600;
 }
 

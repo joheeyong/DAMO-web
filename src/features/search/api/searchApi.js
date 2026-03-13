@@ -6,9 +6,9 @@ export const searchApi = {
       `/api/search/${category}?query=${encodeURIComponent(query)}&display=${display}&start=${start}&sort=${sort}`
     ),
 
-  searchAll: (query, display = 5, sort = 'sim') =>
+  searchAll: (query, display = 5, sort = 'sim', period = 'all') =>
     apiClient.get(
-      `/api/search/all?query=${encodeURIComponent(query)}&display=${display}&sort=${sort}`
+      `/api/search/all?query=${encodeURIComponent(query)}&display=${display}&sort=${sort}&period=${period}`
     ),
 
   trending: (display = 10) =>

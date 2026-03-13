@@ -166,11 +166,34 @@ async function applyRanking(items) {
   return items;
 }
 
+function periodCutoff(period) {
+  if (!period || period === 'all') return null;
+  const now = Date.now();
+  switch (period) {
+    case '1d': return new Date(now - 1 * 24 * 60 * 60 * 1000);
+    case '1w': return new Date(now - 7 * 24 * 60 * 60 * 1000);
+    case '1m': return new Date(now - 30 * 24 * 60 * 60 * 1000);
+    default: return null;
+  }
+}
+
+function filterByPeriod(items, period) {
+  const cutoff = periodCutoff(period);
+  if (!cutoff) return items;
+  return items.filter((item) => {
+    if (!item.date) return true; // keep items without dates
+    const d = new Date(item.date);
+    return !isNaN(d.getTime()) && d >= cutoff;
+  });
+}
+
 export const searchAll = createAsyncThunk(
   'search/searchAll',
-  async ({ query, display = 5, sort = 'sim' }) => {
-    const raw = await searchApi.searchAll(query, display, sort);
+  async ({ query, display = 5, sort = 'sim', period = 'all' }) => {
+    const raw = await searchApi.searchAll(query, display, sort, period);
     let items = normalizeItems(raw);
+    // YouTube/Reddit are filtered server-side; Naver/Kakao need client-side filtering
+    items = filterByPeriod(items, period);
 
     // Record search & apply ranking for logged-in users
     const token = localStorage.getItem('auth_token');
@@ -179,7 +202,7 @@ export const searchAll = createAsyncThunk(
       items = await applyRanking(items);
     }
 
-    return { query, items, sort };
+    return { query, items, sort, period };
   }
 );
 
@@ -301,6 +324,7 @@ const searchSlice = createSlice({
     query: '',
     activeFilter: 'all',
     sort: 'sim',
+    period: 'all',
     items: [],
     loading: false,
     loadingMore: false,
@@ -314,10 +338,14 @@ const searchSlice = createSlice({
     setSort: (state, action) => {
       state.sort = action.payload;
     },
+    setPeriod: (state, action) => {
+      state.period = action.payload;
+    },
     clearSearch: (state) => {
       state.query = '';
       state.activeFilter = 'all';
       state.sort = 'sim';
+      state.period = 'all';
     },
   },
   extraReducers: (builder) => {
@@ -330,6 +358,7 @@ const searchSlice = createSlice({
         state.query = action.payload.query;
         state.items = action.payload.items;
         state.sort = action.payload.sort || 'sim';
+        state.period = action.payload.period || 'all';
         state.activeFilter = 'all';
       })
       .addCase(searchAll.rejected, (state) => {
@@ -363,5 +392,5 @@ const searchSlice = createSlice({
   },
 });
 
-export const { setActiveFilter, setSort, clearSearch } = searchSlice.actions;
+export const { setActiveFilter, setSort, setPeriod, clearSearch } = searchSlice.actions;
 export default searchSlice.reducer;
