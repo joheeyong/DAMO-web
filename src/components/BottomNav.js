@@ -9,6 +9,7 @@ function BottomNav() {
 
   const tabs = [
     { key: 'search', label: '홈', icon: HomeIcon, path: '/search' },
+    { key: 'feed', label: '피드', icon: FeedIcon, path: '/feed' },
     { key: 'bookmarks', label: '저장', icon: BookmarkIcon, path: '/bookmarks' },
     { key: 'maps', label: '지도', icon: MapIcon, path: '/maps' },
     { key: 'profile', label: user ? '내 정보' : '로그인', icon: user ? ProfileIcon : LoginIcon, path: user ? '/profile' : '/login' },
@@ -34,6 +35,17 @@ function BottomNav() {
         })}
       </div>
     </nav>
+  );
+}
+
+function FeedIcon({ active }) {
+  return (
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={active ? '#6366f1' : '#8e8e93'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="2" y="3" width="20" height="14" rx="2" ry="2" />
+      <line x1="8" y1="21" x2="16" y2="21" />
+      <line x1="12" y1="17" x2="12" y2="21" />
+      <polygon points="10 8.5 10 11.5 13 10 10 8.5" fill={active ? '#6366f1' : '#8e8e93'} stroke="none" />
+    </svg>
   );
 }
 

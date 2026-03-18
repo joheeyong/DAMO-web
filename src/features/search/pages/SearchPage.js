@@ -7,6 +7,19 @@ import { searchApi } from '../api/searchApi';
 import FeedCard from '../components/FeedCard';
 import './SearchPage.css';
 
+function HighlightText({ text, query }) {
+  if (!query) return <span>{text}</span>;
+  const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+  const parts = text.split(regex);
+  return (
+    <span>
+      {parts.map((part, i) =>
+        regex.test(part) ? <b key={i}>{part}</b> : part
+      )}
+    </span>
+  );
+}
+
 const INTEREST_BANNERS = [
   (name, interest) => `${name}님이 좋아할 ${interest} 콘텐츠`,
   (name, interest) => `${name}님에게 딱 맞는 ${interest}`,
@@ -34,8 +47,10 @@ function SearchPage() {
     try { return JSON.parse(localStorage.getItem('damo_search_history') || '[]'); } catch { return []; }
   });
   const [selectedIdx, setSelectedIdx] = useState(-1);
+  const [searchMode, setSearchMode] = useState(false);
   const suggestTimer = useRef(null);
   const suggestRef = useRef(null);
+  const searchInputRef = useRef(null);
   const [headerHidden, setHeaderHidden] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
   const [filterHeight, setFilterHeight] = useState(0);
@@ -48,6 +63,21 @@ function SearchPage() {
   const touchStartY = useRef(0);
   const isPulling = useRef(false);
   const PULL_THRESHOLD = 80;
+
+  const openSearchMode = useCallback(() => {
+    setSearchMode(true);
+    setTimeout(() => searchInputRef.current?.focus(), 100);
+  }, []);
+
+  const closeSearchMode = useCallback(() => {
+    setSearchMode(false);
+    setInputValue('');
+    setShowSuggestions(false);
+    setShowHistory(false);
+    setSuggestions([]);
+    dispatch(clearSearch());
+    dispatch(fetchTrending());
+  }, [dispatch]);
 
   useEffect(() => {
     const measure = () => {
@@ -302,77 +332,94 @@ function SearchPage() {
 
       <header ref={headerRef} className={`search-header ${headerHidden ? 'header-hidden' : ''}`}>
         <div className="search-header-inner">
-          <h1 className="search-logo" onClick={() => {
-            setInputValue('');
-            dispatch(clearSearch());
-            dispatch(fetchTrending());
-          }}>DAMO</h1>
-          <form className="search-bar" onSubmit={handleSearch} ref={suggestRef}>
-            <div className="search-input-wrap">
-              <input
-                type="text"
-                placeholder="검색어를 입력하세요"
-                value={inputValue}
-                onChange={handleInputChange}
-                onKeyDown={handleInputKeyDown}
-                onFocus={() => {
-                  if (inputValue.trim().length > 0 && suggestions.length > 0) setShowSuggestions(true);
-                  else if (inputValue.trim().length === 0 && searchHistory.length > 0) setShowHistory(true);
-                }}
-                autoComplete="off"
-              />
-              {showSuggestions && suggestions.length > 0 && (
-                <ul className="suggest-dropdown">
-                  {suggestions.map((s, i) => (
-                    <li
-                      key={s}
-                      className={`suggest-item ${i === selectedIdx ? 'selected' : ''}`}
-                      onMouseDown={() => handleSuggestionClick(s)}
-                      onMouseEnter={() => setSelectedIdx(i)}
-                    >
-                      <svg className="suggest-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-                      </svg>
-                      <span dangerouslySetInnerHTML={{ __html: s.replace(new RegExp(`(${inputValue.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'), '<b>$1</b>') }} />
-                    </li>
-                  ))}
-                </ul>
-              )}
-              {showHistory && !showSuggestions && searchHistory.length > 0 && (
-                <div className="suggest-dropdown history-dropdown">
-                  <div className="history-header">
-                    <span className="history-title">최근 검색어</span>
-                    <button className="history-clear" onMouseDown={clearHistory}>전체 삭제</button>
-                  </div>
-                  <ul>
-                    {searchHistory.map((term) => (
-                      <li key={term} className="suggest-item history-item">
-                        <div className="history-item-left" onMouseDown={() => handleSuggestionClick(term)}>
-                          <svg className="suggest-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
-                          </svg>
-                          <span>{term}</span>
-                        </div>
-                        <button className="history-remove" onMouseDown={(e) => { e.stopPropagation(); removeFromHistory(term); }} aria-label="삭제">
-                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-            <button type="submit" disabled={loading} aria-label="검색">
-              {loading ? (
-                <div className="spinner-small" />
-              ) : (
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          {!searchMode ? (
+            <>
+              <h1 className="search-logo" onClick={closeSearchMode}>DAMO</h1>
+              <div className="header-spacer" />
+              <button className="search-icon-btn" onClick={openSearchMode} aria-label="검색">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="11" cy="11" r="8" />
                   <line x1="21" y1="21" x2="16.65" y2="16.65" />
                 </svg>
-              )}
-            </button>
-          </form>
+              </button>
+            </>
+          ) : (
+            <>
+              <button className="search-back-btn" onClick={closeSearchMode} aria-label="뒤로">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="19" y1="12" x2="5" y2="12" />
+                  <polyline points="12 19 5 12 12 5" />
+                </svg>
+              </button>
+              <form className="search-bar" onSubmit={handleSearch} ref={suggestRef}>
+                <div className="search-input-wrap">
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    placeholder="검색어를 입력하세요"
+                    value={inputValue}
+                    onChange={handleInputChange}
+                    onKeyDown={handleInputKeyDown}
+                    onFocus={() => {
+                      if (inputValue.trim().length > 0 && suggestions.length > 0) setShowSuggestions(true);
+                      else if (inputValue.trim().length === 0 && searchHistory.length > 0) setShowHistory(true);
+                    }}
+                    autoComplete="off"
+                  />
+                  {showSuggestions && suggestions.length > 0 && (
+                    <ul className="suggest-dropdown">
+                      {suggestions.map((s, i) => (
+                        <li
+                          key={s}
+                          className={`suggest-item ${i === selectedIdx ? 'selected' : ''}`}
+                          onMouseDown={() => handleSuggestionClick(s)}
+                          onMouseEnter={() => setSelectedIdx(i)}
+                        >
+                          <svg className="suggest-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+                          </svg>
+                          <HighlightText text={s} query={inputValue} />
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {showHistory && !showSuggestions && searchHistory.length > 0 && (
+                    <div className="suggest-dropdown history-dropdown">
+                      <div className="history-header">
+                        <span className="history-title">최근 검색어</span>
+                        <button className="history-clear" onMouseDown={clearHistory}>전체 삭제</button>
+                      </div>
+                      <ul>
+                        {searchHistory.map((term) => (
+                          <li key={term} className="suggest-item history-item">
+                            <div className="history-item-left" onMouseDown={() => handleSuggestionClick(term)}>
+                              <svg className="suggest-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+                              </svg>
+                              <span>{term}</span>
+                            </div>
+                            <button className="history-remove" onMouseDown={(e) => { e.stopPropagation(); removeFromHistory(term); }} aria-label="삭제">
+                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+                <button type="submit" disabled={loading} aria-label="검색">
+                  {loading ? (
+                    <div className="spinner-small" />
+                  ) : (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="11" cy="11" r="8" />
+                      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                  )}
+                </button>
+              </form>
+            </>
+          )}
         </div>
       </header>
 
@@ -411,6 +458,7 @@ function SearchPage() {
                   className={`filter-chip filter-chip-interest ${query === interest ? 'active' : ''}`}
                   onClick={() => {
                     logEvent(analytics, 'select_filter', { filter: `interest:${interest}` });
+                    setSearchMode(true);
                     setInputValue(interest);
                     dispatch(searchAll({ query: interest, sort, period }));
                   }}
@@ -465,10 +513,9 @@ function SearchPage() {
           </div>
         )}
 
-        {!loading && !query && items.length > 0 && (
+        {!loading && !query && items.length > 0 && !searchMode && (
           <div className="trending-header">
-            <h2>추천 피드</h2>
-            <p>지금 인기 있는 콘텐츠</p>
+            <h2>지금 뜨는 콘텐츠</h2>
           </div>
         )}
 

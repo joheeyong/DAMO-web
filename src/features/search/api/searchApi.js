@@ -5,7 +5,10 @@ let redditCallCounter = 0;
 function fetchRedditViaFlutter(url) {
   return new Promise((resolve) => {
     if (!window.DamoReddit) return resolve(null);
-    const callbackId = `reddit_${Date.now()}_${redditCallCounter++}`;
+    // 암호학적 난수로 예측 불가능한 콜백 ID 생성
+    const randomBytes = new Uint8Array(16);
+    crypto.getRandomValues(randomBytes);
+    const callbackId = `_rc_${Array.from(randomBytes, (b) => b.toString(16).padStart(2, '0')).join('')}`;
     window[callbackId] = (json) => {
       delete window[callbackId];
       try { resolve(JSON.parse(json)); } catch { resolve(null); }

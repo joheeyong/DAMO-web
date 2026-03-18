@@ -54,7 +54,7 @@ export const fetchMe = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const data = await authApi.getMe();
-      if (data.error || data.status === 403) {
+      if (data.error) {
         localStorage.removeItem('auth_token');
         return rejectWithValue('Invalid token');
       }

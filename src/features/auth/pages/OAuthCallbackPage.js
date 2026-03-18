@@ -10,7 +10,11 @@ function OAuthCallbackPage() {
 
   useEffect(() => {
     const code = searchParams.get('code');
-    if (code) {
+    const state = searchParams.get('state');
+    const savedState = sessionStorage.getItem('google_oauth_state');
+    sessionStorage.removeItem('google_oauth_state');
+
+    if (code && state && state === savedState) {
       const redirectUri = window.location.origin + '/auth/google/callback';
       dispatch(googleLogin({ code, redirectUri }))
         .unwrap()

@@ -110,8 +110,15 @@ function FeedCard({ item }) {
       activityApi.recordClick(item.id, item.platform, item.sourceKeyword);
     }
     if (inApp) {
-      // Trigger real navigation so Flutter's NavigationDelegate intercepts it
-      window.location.href = item.link;
+      // URL 검증: http/https만 허용 (javascript:, data: 등 차단)
+      try {
+        const parsed = new URL(item.link);
+        if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+          window.location.href = item.link;
+        }
+      } catch {
+        // 잘못된 URL은 무시
+      }
     } else {
       navigate('/content', { state: { item } });
     }

@@ -2,13 +2,13 @@ import { initializeApp } from 'firebase/app';
 import { getAnalytics, logEvent } from 'firebase/analytics';
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyCyqBSOsP5jh2QulYyHAw-KOBDo-G5u-Rg',
-  authDomain: 'damo-app-2026.firebaseapp.com',
-  projectId: 'damo-app-2026',
-  storageBucket: 'damo-app-2026.firebasestorage.app',
-  messagingSenderId: '961127696213',
-  appId: '1:961127696213:web:00d591747b8808e8f0d1dc',
-  measurementId: 'G-HQ4S4HNBCD',
+  apiKey: process.env.REACT_APP_FIREBASE_API_KEY || '',
+  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN || '',
+  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID || '',
+  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET || '',
+  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID || '',
+  appId: process.env.REACT_APP_FIREBASE_APP_ID || '',
+  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID || '',
 };
 
 const app = initializeApp(firebaseConfig);

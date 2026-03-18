@@ -3,9 +3,15 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import './LoginPage.css';
 
-const GOOGLE_CLIENT_ID = '546301713753-tnosu460h0nsiirqs0uqfue1oa7tvldv.apps.googleusercontent.com';
-const NAVER_CLIENT_ID = 'MRyB2GQo4D7YUW_epid5';
-const KAKAO_CLIENT_ID = '17dff873debbf3988118d7b429c6ad99';
+const GOOGLE_CLIENT_ID = process.env.REACT_APP_GOOGLE_CLIENT_ID || '';
+const NAVER_CLIENT_ID = process.env.REACT_APP_NAVER_CLIENT_ID || '';
+const KAKAO_CLIENT_ID = process.env.REACT_APP_KAKAO_CLIENT_ID || '';
+
+function generateState() {
+  const array = new Uint8Array(32);
+  crypto.getRandomValues(array);
+  return Array.from(array, (b) => b.toString(16).padStart(2, '0')).join('');
+}
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -17,28 +23,34 @@ function LoginPage() {
 
   const handleGoogleLogin = () => {
     const redirectUri = window.location.origin + '/auth/google/callback';
+    const state = generateState();
+    sessionStorage.setItem('google_oauth_state', state);
     const url = `https://accounts.google.com/o/oauth2/v2/auth`
       + `?client_id=${GOOGLE_CLIENT_ID}`
       + `&redirect_uri=${encodeURIComponent(redirectUri)}`
       + `&response_type=code`
       + `&scope=openid%20email%20profile`
       + `&access_type=offline`
-      + `&prompt=consent`;
+      + `&prompt=consent`
+      + `&state=${state}`;
     window.location.href = url;
   };
 
   const handleKakaoLogin = () => {
     const redirectUri = window.location.origin + '/auth/kakao/callback';
+    const state = generateState();
+    sessionStorage.setItem('kakao_oauth_state', state);
     const url = `https://kauth.kakao.com/oauth/authorize`
       + `?client_id=${KAKAO_CLIENT_ID}`
       + `&redirect_uri=${encodeURIComponent(redirectUri)}`
-      + `&response_type=code`;
+      + `&response_type=code`
+      + `&state=${state}`;
     window.location.href = url;
   };
 
   const handleNaverLogin = () => {
     const redirectUri = window.location.origin + '/auth/naver/callback';
-    const state = Math.random().toString(36).substring(2);
+    const state = generateState();
     sessionStorage.setItem('naver_oauth_state', state);
     const url = `https://nid.naver.com/oauth2.0/authorize`
       + `?response_type=code`

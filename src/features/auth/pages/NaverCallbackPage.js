@@ -11,7 +11,10 @@ function NaverCallbackPage() {
   useEffect(() => {
     const code = searchParams.get('code');
     const state = searchParams.get('state');
-    if (code && state) {
+    const savedState = sessionStorage.getItem('naver_oauth_state');
+    sessionStorage.removeItem('naver_oauth_state');
+
+    if (code && state && state === savedState) {
       const redirectUri = window.location.origin + '/auth/naver/callback';
       dispatch(naverLogin({ code, state, redirectUri }))
         .unwrap()

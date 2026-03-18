@@ -8,14 +8,19 @@ function PushPage() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { tokens, sendLoading, sendResult } = useSelector((state) => state.push);
+  const { token: authToken, user } = useSelector((state) => state.auth);
 
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [selectedToken, setSelectedToken] = useState('all');
 
   useEffect(() => {
+    if (!authToken) {
+      navigate('/login');
+      return;
+    }
     dispatch(fetchTokens());
-  }, [dispatch]);
+  }, [dispatch, authToken, navigate]);
 
   useEffect(() => {
     if (sendResult?.status === 'OK') {

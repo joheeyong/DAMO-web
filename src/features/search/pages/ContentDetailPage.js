@@ -145,7 +145,7 @@ function ContentDetailPage() {
           className="detail-iframe"
           src={mobileLink}
           title={item.title}
-          sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+          sandbox="allow-scripts allow-popups allow-forms"
           onError={() => setIframeError(true)}
         />
       ) : (
