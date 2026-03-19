@@ -64,6 +64,10 @@ export const searchApi = {
   trending: (display = 10) =>
     apiClient.get(`/api/search/trending?display=${display}`),
 
+  // Trending by YouTube category ID (e.g., Sports=17, Music=10)
+  trendingByCategory: (display = 10, categoryId) =>
+    apiClient.get(`/api/search/trending?display=${display}&categoryId=${categoryId}`),
+
   suggest: (q) =>
     apiClient.get(`/api/search/suggest?q=${encodeURIComponent(q)}`),
 };

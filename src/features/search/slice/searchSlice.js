@@ -191,11 +191,27 @@ export const fetchTrending = createAsyncThunk(
     // Trending already includes shorts from YouTube API
     const trendingPromise = searchApi.trending(10);
 
-    // Interest-based search (searchAll already includes shorts per keyword)
+    // Interest-based: use YouTube category API when possible, fall back to keyword search
     const shortsPool = userInterests.length > 0 ? userInterests : VIRAL_KEYWORDS;
     const shuffled = [...shortsPool].sort(() => Math.random() - 0.5);
     const picks = shuffled.slice(0, Math.min(2, shuffled.length));
-    const interestPromises = picks.map((kw) => searchApi.searchAll(kw, 5).catch(() => ({})));
+    const interestPromises = picks.map((kw) => {
+      const categoryId = INTEREST_TO_YT_CATEGORY[kw];
+      if (categoryId) {
+        // Category-based: YouTube trending by category + Naver/Kakao keyword search in parallel
+        return Promise.all([
+          searchApi.trendingByCategory(5, categoryId).catch(() => ({})),
+          searchApi.searchAll(kw, 5).catch(() => ({})),
+        ]).then(([catResults, kwResults]) => {
+          // Merge: YouTube from category, rest from keyword search
+          const merged = { ...kwResults };
+          if (catResults.youtube) merged.youtube = catResults.youtube;
+          if (catResults.shorts) merged.shorts = catResults.shorts;
+          return merged;
+        });
+      }
+      return searchApi.searchAll(kw, 5).catch(() => ({}));
+    });
 
     const [trendingRaw, ...interestResults] = await Promise.all([
       trendingPromise,
@@ -254,6 +270,30 @@ const VIRAL_KEYWORDS = [
   '인테리어', '자동차', '펫', '공부', '재테크', '드라마', '축구',
 ];
 
+// YouTube video category IDs (KR region)
+// https://developers.google.com/youtube/v3/docs/videoCategories/list
+const INTEREST_TO_YT_CATEGORY = {
+  '음악': '10',       // Music
+  '게임': '20',       // Gaming
+  '축구': '17',       // Sports
+  '운동': '17',       // Sports
+  '영화': '1',        // Film & Animation
+  '드라마': '24',     // Entertainment
+  '요리': '26',       // Howto & Style
+  '먹방': '26',       // Howto & Style
+  '맛집': '26',       // Howto & Style
+  '뷰티': '26',       // Howto & Style
+  '패션': '26',       // Howto & Style
+  '여행': '19',       // Travel & Events
+  '캠핑': '19',       // Travel & Events
+  '자동차': '2',      // Autos & Vehicles
+  '펫': '15',         // Pets & Animals
+  'IT': '28',         // Science & Technology
+  '공부': '27',       // Education
+  '재테크': '25',     // News & Politics
+  '인테리어': '26',   // Howto & Style
+};
+
 export const fetchMoreTrending = createAsyncThunk(
   'search/fetchMoreTrending',
   async (_, { getState, dispatch }) => {
@@ -284,8 +324,20 @@ export const fetchMoreTrending = createAsyncThunk(
       keyword = available[Math.floor(Math.random() * available.length)];
     }
 
-    // searchAll already includes shorts — no extra API calls needed
-    const raw = await searchApi.searchAll(keyword, 5);
+    // Use category-based YouTube when possible, merge with keyword search
+    const categoryId = INTEREST_TO_YT_CATEGORY[keyword];
+    let raw;
+    if (categoryId) {
+      const [catResults, kwResults] = await Promise.all([
+        searchApi.trendingByCategory(5, categoryId).catch(() => ({})),
+        searchApi.searchAll(keyword, 5).catch(() => ({})),
+      ]);
+      raw = { ...kwResults };
+      if (catResults.youtube) raw.youtube = catResults.youtube;
+      if (catResults.shorts) raw.shorts = catResults.shorts;
+    } else {
+      raw = await searchApi.searchAll(keyword, 5);
+    }
     let items = normalizeItems(raw);
     items = await applyRanking(items);
     return { items, keyword };
