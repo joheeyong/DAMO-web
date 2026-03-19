@@ -1,7 +1,6 @@
 import { apiClient } from '../../../core/api/apiClient';
 
 // Request Reddit data via Flutter proxy (bypasses AWS IP block)
-let redditCallCounter = 0;
 function fetchRedditViaFlutter(url) {
   return new Promise((resolve) => {
     if (!window.DamoReddit) return resolve(null);
