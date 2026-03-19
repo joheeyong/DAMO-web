@@ -3,6 +3,12 @@ import { searchApi } from '../api/searchApi';
 import { activityApi } from '../api/activityApi';
 import { stripHtml } from '../../../shared/utils/helpers';
 
+function upgradeKakaoThumbnail(url) {
+  if (!url) return '';
+  // Kakao CDN: /argon/130x130_85_c/ID → /argon/600x0_65_wr/ID (max supported)
+  return url.replace(/\/argon\/\d+x\d+_\d+_[a-z]+\//, '/argon/600x0_65_wr/');
+}
+
 function normalizeItems(rawResults) {
   const items = [];
 
@@ -63,7 +69,7 @@ function normalizeItems(rawResults) {
           title: doc.title?.replace(/<[^>]*>/g, '') || '',
           description: (doc.contents || doc.title || '').replace(/<[^>]*>/g, '').substring(0, 200),
           link: doc.url || '',
-          image: doc.thumbnail_url || doc.thumbnail || '',
+          image: upgradeKakaoThumbnail(doc.thumbnail_url || doc.thumbnail || ''),
           author: doc.blogname || doc.cafename || '',
           date: doc.datetime ? doc.datetime.substring(0, 10) : '',
           extra: null,
