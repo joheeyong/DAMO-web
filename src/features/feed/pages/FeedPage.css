@@ -84,6 +84,23 @@
   object-fit: cover;
 }
 
+/* Placeholder for items without image */
+.feed-slide-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.feed-slide-placeholder-icon {
+  opacity: 0.4;
+}
+
 /* Gradient overlay for readability */
 .feed-slide-gradient {
   position: absolute;

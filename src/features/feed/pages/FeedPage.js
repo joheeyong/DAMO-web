@@ -1,30 +1,34 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { fetchTrending, fetchMoreTrending } from '../../search/slice/searchSlice';
+import { fetchTrending, fetchMoreTrending, clearSearch } from '../../search/slice/searchSlice';
 import { analytics, logEvent } from '../../../core/firebase';
 import { activityApi } from '../../search/api/activityApi';
 import { bookmarkApi } from '../../../shared/api/bookmarkApi';
 import { PLATFORM_LABELS } from '../../../shared/constants/platforms';
-import { getVideoId, isFlutterApp } from '../../../shared/utils/helpers';
+import { isFlutterApp } from '../../../shared/utils/helpers';
 import './FeedPage.css';
+
+function extractVideoId(item) {
+  // item.id format: "youtube-VIDEO_ID" or "shorts-VIDEO_ID"
+  if (item.platform === 'shorts') return item.id.replace('shorts-', '');
+  if (item.platform === 'youtube') return item.id.replace('youtube-', '');
+  return null;
+}
 
 function FeedPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { items, loading, trendingLoaded } = useSelector((state) => state.search);
+  const { items, loading, loadingMore } = useSelector((state) => state.search);
   const containerRef = useRef(null);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const loadMoreRef = useRef(null);
+  const [hasFetched, setHasFetched] = useState(false);
 
-  // Filter to items with images (fullscreen needs visuals)
-  const feedItems = items.filter((item) => item.image);
-
+  // Always fetch fresh trending data on mount
   useEffect(() => {
-    if (!trendingLoaded) {
-      dispatch(fetchTrending());
-    }
-  }, [dispatch, trendingLoaded]);
+    dispatch(clearSearch());
+    dispatch(fetchTrending()).then(() => setHasFetched(true));
+  }, [dispatch]);
 
   useEffect(() => {
     logEvent(analytics, 'page_view', { page_title: 'Feed', page_path: '/feed' });
@@ -51,23 +55,23 @@ function FeedPage() {
 
     slides.forEach((slide) => observer.observe(slide));
     return () => observer.disconnect();
-  }, [feedItems.length]);
+  }, [items.length]);
 
   // Load more when near the end
   useEffect(() => {
-    if (currentIndex >= feedItems.length - 3 && feedItems.length > 0 && !loading) {
+    if (currentIndex >= items.length - 3 && items.length > 0 && !loading && !loadingMore && hasFetched) {
       dispatch(fetchMoreTrending());
     }
-  }, [currentIndex, feedItems.length, loading, dispatch]);
+  }, [currentIndex, items.length, loading, loadingMore, hasFetched, dispatch]);
 
   // Notify Flutter
   useEffect(() => {
-    if (!loading && feedItems.length > 0) {
+    if (!loading && items.length > 0) {
       try { window.DamoReady?.postMessage('ready'); } catch {}
     }
-  }, [loading, feedItems.length]);
+  }, [loading, items.length]);
 
-  if (loading && feedItems.length === 0) {
+  if (loading && items.length === 0) {
     return (
       <div className="feed-page-loading">
         <div className="feed-page-spinner" />
@@ -78,7 +82,7 @@ function FeedPage() {
 
   return (
     <div className="feed-page" ref={containerRef}>
-      {feedItems.map((item, idx) => (
+      {items.map((item, idx) => (
         <FeedSlide
           key={item.id}
           item={item}
@@ -87,7 +91,7 @@ function FeedPage() {
           navigate={navigate}
         />
       ))}
-      {feedItems.length === 0 && !loading && (
+      {items.length === 0 && !loading && hasFetched && (
         <div className="feed-page-empty">
           <p>표시할 콘텐츠가 없습니다</p>
         </div>
@@ -100,7 +104,8 @@ function FeedSlide({ item, index, isActive, navigate }) {
   const [bookmarked, setBookmarked] = useState(() => bookmarkApi.isBookmarked(item.id));
   const platform = PLATFORM_LABELS[item.platform] || { label: item.platform, color: '#6b7280' };
   const isVideo = item.platform === 'youtube' || item.platform === 'shorts';
-  const videoId = isVideo ? getVideoId(item) : null;
+  const videoId = isVideo ? extractVideoId(item) : null;
+  const hasImage = !!item.image;
   const inApp = isFlutterApp();
 
   const handleBookmark = useCallback((e) => {
@@ -148,7 +153,7 @@ function FeedSlide({ item, index, isActive, navigate }) {
   return (
     <div className="feed-slide" data-index={index} onClick={handleOpen}>
       {/* Background */}
-      {isVideo && isActive ? (
+      {isVideo && isActive && videoId ? (
         <iframe
           className="feed-slide-video"
           src={`https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&modestbranding=1&playsinline=1&loop=1&playlist=${videoId}`}
@@ -156,8 +161,18 @@ function FeedSlide({ item, index, isActive, navigate }) {
           allowFullScreen
           title={item.title}
         />
-      ) : (
+      ) : hasImage ? (
         <img src={item.image} alt="" className="feed-slide-image" />
+      ) : (
+        <div className="feed-slide-placeholder">
+          <div className="feed-slide-placeholder-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <polyline points="21 15 16 10 5 21" />
+            </svg>
+          </div>
+        </div>
       )}
 
       {/* Gradient overlay */}
@@ -202,7 +217,7 @@ function FeedSlide({ item, index, isActive, navigate }) {
         </div>
       </div>
 
-      {/* Progress dots indicator */}
+      {/* Playing indicator */}
       {isVideo && isActive && (
         <div className="feed-slide-playing">
           <span className="feed-slide-playing-dot" />
