@@ -109,6 +109,11 @@ function FeedCard({ item }) {
     if (localStorage.getItem('auth_token')) {
       activityApi.recordClick(item.id, item.platform, item.sourceKeyword);
     }
+    // DAMO blog: internal navigation
+    if (item.platform === 'damo-blog') {
+      navigate(`/blog/${item.extra?.blogPostId}`);
+      return;
+    }
     if (inApp) {
       // URL 검증: http/https만 허용 (javascript:, data: 등 차단)
       try {
@@ -164,6 +169,12 @@ function FeedCard({ item }) {
               <div className="feed-reddit-stats">
                 <span>▲ {item.extra?.score?.toLocaleString()}</span>
                 <span>💬 {item.extra?.numComments?.toLocaleString()}</span>
+              </div>
+            )}
+            {item.platform === 'damo-blog' && (
+              <div className="feed-reddit-stats">
+                <span>♥ {item.extra?.likeCount || 0}</span>
+                <span>💬 {item.extra?.commentCount || 0}</span>
               </div>
             )}
             <div className="feed-meta">

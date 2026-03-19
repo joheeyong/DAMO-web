@@ -643,3 +643,26 @@
     font-size: 0.95rem;
   }
 }
+
+/* Write FAB */
+.fab-write {
+  position: fixed;
+  bottom: 90px;
+  right: 20px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #6366f1;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(99,102,241,0.4);
+  z-index: 100;
+  transition: transform 0.2s;
+}
+
+.fab-write:active {
+  transform: scale(0.92);
+}

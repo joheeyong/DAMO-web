@@ -16,4 +16,5 @@ export const PLATFORM_LABELS = {
   reddit: { label: 'Reddit', color: '#ff4500' },
   shorts: { label: 'Shorts', color: '#ff0000' },
   instagram: { label: 'Instagram', color: '#E1306C' },
+  'damo-blog': { label: 'DAMO', color: '#6366f1' },
 };

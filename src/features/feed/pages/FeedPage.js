@@ -129,6 +129,10 @@ function FeedSlide({ item, index, isActive, navigate }) {
     if (localStorage.getItem('auth_token')) {
       activityApi.recordClick(item.id, item.platform, item.sourceKeyword);
     }
+    if (item.platform === 'damo-blog') {
+      navigate(`/blog/${item.extra?.blogPostId}`);
+      return;
+    }
     if (inApp) {
       try {
         const parsed = new URL(item.link);

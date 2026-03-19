@@ -100,6 +100,25 @@ function normalizeItems(rawResults) {
           },
         });
       });
+    } else if (category === 'damo-blog') {
+      const blogItems = data.items || [];
+      blogItems.forEach((post) => {
+        items.push({
+          id: `damo-blog-${post.id}`,
+          platform: 'damo-blog',
+          title: post.title || '',
+          description: post.summary || '',
+          link: `/blog/${post.id}`,
+          image: post.coverImage || '',
+          author: post.authorName || '',
+          date: post.publishedAt?.substring(0, 10) || '',
+          extra: {
+            likeCount: post.likeCount || 0,
+            commentCount: post.commentCount || 0,
+            blogPostId: post.id,
+          },
+        });
+      });
     } else {
       const naverItems = data.items || [];
       naverItems.forEach((item, idx) => {

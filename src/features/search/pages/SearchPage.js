@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { searchAll, fetchTrending, fetchMoreTrending, setActiveFilter, setSort, setPeriod, clearSearch } from '../slice/searchSlice';
 import { FILTERS } from '../../../shared/constants/filters';
 import { analytics, logEvent } from '../../../core/firebase';
@@ -35,10 +36,11 @@ const INTEREST_BANNERS = [
 
 function SearchPage() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { query, activeFilter, sort, period, items, loading, loadingMore, trendingLoaded } = useSelector(
     (state) => state.search
   );
-  const { user } = useSelector((state) => state.auth);
+  const { token, user } = useSelector((state) => state.auth);
   const [inputValue, setInputValue] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -565,6 +567,15 @@ function SearchPage() {
           </>
         )}
       </main>
+
+      {token && (
+        <button className="fab-write" onClick={() => navigate('/blog/write')} aria-label="글쓰기">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
+        </button>
+      )}
     </div>
   );
 }

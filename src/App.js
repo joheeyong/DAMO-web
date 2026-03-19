@@ -16,6 +16,8 @@ import NaverCallbackPage from './features/auth/pages/NaverCallbackPage';
 import KakaoCallbackPage from './features/auth/pages/KakaoCallbackPage';
 import ProfilePage from './features/auth/pages/ProfilePage';
 import OnboardingInterestsPage from './features/auth/pages/OnboardingInterestsPage';
+import BlogEditorPage from './features/blog/pages/BlogEditorPage';
+import BlogDetailPage from './features/blog/pages/BlogDetailPage';
 import BottomNav from './components/BottomNav';
 import { fetchMe } from './features/auth/slice/authSlice';
 
@@ -49,6 +51,9 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/onboarding/interests" element={<OnboardingInterestsPage />} />
+        <Route path="/blog/write" element={<BlogEditorPage />} />
+        <Route path="/blog/edit/:id" element={<BlogEditorPage />} />
+        <Route path="/blog/:id" element={<BlogDetailPage />} />
         <Route path="/auth/google/callback" element={<OAuthCallbackPage />} />
         <Route path="/auth/naver/callback" element={<NaverCallbackPage />} />
         <Route path="/auth/kakao/callback" element={<KakaoCallbackPage />} />
