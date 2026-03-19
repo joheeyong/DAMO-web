@@ -9,7 +9,11 @@
       "destination": "http://54.180.179.231/health"
     },
     {
-      "source": "/((?!api|health).*)",
+      "source": "/uploads/:path*",
+      "destination": "http://54.180.179.231/uploads/:path*"
+    },
+    {
+      "source": "/((?!api|health|uploads).*)",
       "destination": "/index.html"
     }
   ]
