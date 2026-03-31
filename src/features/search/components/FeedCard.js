@@ -15,7 +15,6 @@ function VideoPreview({ item, isShorts }) {
   const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 768px)').matches;
   const videoId = getVideoId(item);
 
-  // Mobile: auto-play when centered in viewport
   useEffect(() => {
     if (!isMobile || !cardRef.current) return;
     const observer = new IntersectionObserver(
@@ -75,6 +74,10 @@ function VideoPreview({ item, isShorts }) {
 function FeedCard({ item }) {
   const navigate = useNavigate();
   const [bookmarked, setBookmarked] = useState(() => bookmarkApi.isBookmarked(item.id));
+  const [summary, setSummary] = useState('');
+  const [isSummarizing, setIsSummarizing] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
+
   const platform = PLATFORM_LABELS[item.platform] || { label: item.platform, color: '#6b7280' };
   const isYoutube = item.platform === 'youtube';
   const isShorts = item.platform === 'shorts';
@@ -85,6 +88,48 @@ function FeedCard({ item }) {
   const isVideo = isYoutube || isShorts;
 
   const inApp = isFlutterApp();
+
+  const handleSummarize = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (showSummary) {
+      setShowSummary(false);
+      return;
+    }
+
+    if (summary) {
+      setShowSummary(true);
+      return;
+    }
+
+    setIsSummarizing(true);
+    setShowSummary(true);
+
+    try {
+      const response = await fetch('/api/ai/summarize', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+        },
+        body: JSON.stringify({
+          content: `${item.title}. ${item.description || ''}`
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setSummary(data.summary);
+      } else {
+        setSummary('요약을 가져오지 못했습니다.');
+      }
+    } catch (error) {
+      setSummary('서버 연결 오류가 발생했습니다.');
+    } finally {
+      setIsSummarizing(false);
+    }
+  };
 
   const handleBookmark = (e) => {
     e.preventDefault();
@@ -109,25 +154,21 @@ function FeedCard({ item }) {
     if (localStorage.getItem('auth_token')) {
       activityApi.recordClick(item.id, item.platform, item.sourceKeyword);
     }
-    // DAMO blog: internal navigation
     if (item.platform === 'damo-blog') {
       navigate(`/blog/${item.extra?.blogPostId}`);
       return;
     }
-    // DAMO social feed: internal navigation
     if (item.platform === 'damo-feed') {
       navigate(`/social/${item.extra?.socialPostId}`);
       return;
     }
     if (inApp) {
-      // URL 검증: http/https만 허용 (javascript:, data: 등 차단)
       try {
         const parsed = new URL(item.link);
         if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
           window.location.href = item.link;
         }
       } catch {
-        // 잘못된 URL은 무시
       }
     } else {
       navigate('/content', { state: { item } });
@@ -140,9 +181,7 @@ function FeedCard({ item }) {
       className={`feed-card ${isYoutube ? 'feed-card-youtube' : ''} ${isShorts ? 'feed-card-shorts' : ''}`}
       onClick={handleClick}
     >
-      {isShorts && hasImage && (
-        <VideoPreview item={item} isShorts={true} />
-      )}
+      {isShorts && hasImage && <VideoPreview item={item} isShorts={true} />}
 
       {isYoutube && hasImage && (
         <div className="feed-thumbnail-wrap">
@@ -153,38 +192,15 @@ function FeedCard({ item }) {
 
       {!isVideo && hasImage && (
         <div className="feed-card-body">
-          <img
-            src={item.image}
-            alt=""
-            className={`feed-image ${isBook ? 'feed-image-book' : ''}`}
-          />
+          <img src={item.image} alt="" className={`feed-image ${isBook ? 'feed-image-book' : ''}`} />
           <div className="feed-text">
             <div className="feed-badge" style={{ background: platform.color, color: platform.textColor || '#fff' }}>
               {platform.label}
             </div>
             <h3 className="feed-title">{item.title}</h3>
-            {isShop && item.extra?.price && (
-              <p className="feed-price">{Number(item.extra.price).toLocaleString()}원</p>
-            )}
-            {isReddit && item.extra?.subreddit && (
-              <p className="feed-subreddit">{item.extra.subreddit}</p>
-            )}
+            {isShop && item.extra?.price && <p className="feed-price">{Number(item.extra.price).toLocaleString()}원</p>}
+            {isReddit && item.extra?.subreddit && <p className="feed-subreddit">{item.extra.subreddit}</p>}
             {!isShop && <p className="feed-desc">{item.description}</p>}
-            {isReddit && (
-              <div className="feed-reddit-stats">
-                <span>▲ {item.extra?.score?.toLocaleString()}</span>
-                <span>💬 {item.extra?.numComments?.toLocaleString()}</span>
-              </div>
-            )}
-            {(item.platform === 'damo-blog' || item.platform === 'damo-feed') && (
-              <div className="feed-reddit-stats">
-                <span>♥ {item.extra?.likeCount || 0}</span>
-                <span>💬 {item.extra?.commentCount || 0}</span>
-                {item.platform === 'damo-feed' && item.extra?.mediaCount > 1 && (
-                  <span>📷 {item.extra.mediaCount}</span>
-                )}
-              </div>
-            )}
             <div className="feed-meta">
               {item.author && <span>{item.author}</span>}
               {item.date && <span>{item.date}</span>}
@@ -238,21 +254,13 @@ function FeedCard({ item }) {
             <span className="ai-sparkle">✨</span> AI 3줄 요약
           </div>
           <div className="feed-ai-summary-content">
-            {isSummarizing ? (
-              <div className="summary-loading">요약 중...</div>
-            ) : (
-              <pre className="summary-text">{summary}</pre>
-            )}
+            {isSummarizing ? <div className="summary-loading">요약 중...</div> : <pre className="summary-text">{summary}</pre>}
           </div>
         </div>
       )}
 
       <div className="feed-card-actions">
-        <button 
-          className={`feed-ai-btn ${showSummary ? 'active' : ''}`} 
-          onClick={handleSummarize} 
-          title="AI 요약"
-        >
+        <button className={`feed-ai-btn ${showSummary ? 'active' : ''}`} onClick={handleSummarize} title="AI 요약">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 1 7.107 7.107c0 .13 0 .261 0 .393a7.5 7.5 0 0 1-7.107 7.107c-.13 0-.261 0-.393 0a7.5 7.5 0 0 1-7.107-7.107c0-.13 0-.261 0-.393A7.5 7.5 0 0 1 12 3z" />
             <path d="M12 8v8M8 12h8" />
@@ -264,13 +272,6 @@ function FeedCard({ item }) {
           </svg>
         </button>
       </div>
-    </a>
-  );
-}
-
-export default FeedCard;
-vg>
-      </button>
     </a>
   );
 }
