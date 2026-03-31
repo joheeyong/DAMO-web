@@ -119,6 +119,33 @@ function normalizeItems(rawResults) {
           },
         });
       });
+    } else if (category === 'damo-feed') {
+      const feedItems = data.items || [];
+      feedItems.forEach((post) => {
+        let firstImage = '';
+        try {
+          const media = typeof post.images === 'string' ? JSON.parse(post.images) : post.images;
+          if (Array.isArray(media) && media.length > 0) {
+            firstImage = media[0].url || media[0] || '';
+          }
+        } catch {}
+        items.push({
+          id: `damo-feed-${post.id}`,
+          platform: 'damo-feed',
+          title: (post.content || '').substring(0, 80),
+          description: (post.content || '').substring(0, 200),
+          link: `/social/${post.id}`,
+          image: firstImage,
+          author: post.authorName || '',
+          date: post.createdAt?.substring(0, 10) || '',
+          extra: {
+            likeCount: post.likeCount || 0,
+            commentCount: post.commentCount || 0,
+            socialPostId: post.id,
+            mediaCount: (() => { try { const m = typeof post.images === 'string' ? JSON.parse(post.images) : post.images; return Array.isArray(m) ? m.length : 0; } catch { return 0; } })(),
+          },
+        });
+      });
     } else {
       const naverItems = data.items || [];
       naverItems.forEach((item, idx) => {
@@ -316,7 +343,9 @@ const INTEREST_TO_YT_CATEGORY = {
 export const fetchMoreTrending = createAsyncThunk(
   'search/fetchMoreTrending',
   async (_, { getState, dispatch }) => {
-    const { auth, search } = getState();
+    const { search, auth } = getState();
+    // Prevent duplicate calls while already loading
+    if (search.loadingMore) return { items: [], keyword: '' };
     const usedKeywords = search.usedKeywords;
     const userInterests = auth.user?.interests
       ? auth.user.interests.split(',').filter(Boolean)

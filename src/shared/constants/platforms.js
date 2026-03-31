@@ -17,4 +17,5 @@ export const PLATFORM_LABELS = {
   shorts: { label: 'Shorts', color: '#ff0000' },
   instagram: { label: 'Instagram', color: '#E1306C' },
   'damo-blog': { label: 'DAMO', color: '#6366f1' },
+  'damo-feed': { label: 'DAMO 피드', color: '#8b5cf6' },
 };

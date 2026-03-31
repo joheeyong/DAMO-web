@@ -292,3 +292,102 @@
     padding: 10px 12px;
   }
 }
+
+/* AI Summary Styles */
+.feed-ai-summary {
+  margin: 0 14px 14px 14px;
+  padding: 12px;
+  background: var(--bg-input);
+  border: 1px dashed var(--accent-border);
+  border-radius: 12px;
+  animation: slideDown 0.3s ease-out;
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.feed-ai-summary-header {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ai-sparkle {
+  font-size: 1rem;
+}
+
+.feed-ai-summary-content {
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+.summary-text {
+  white-space: pre-wrap;
+  font-family: inherit;
+  margin: 0;
+}
+
+.summary-loading {
+  color: var(--text-tertiary);
+  font-style: italic;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.feed-card-actions {
+  display: flex;
+  gap: 8px;
+  padding: 0 14px 14px;
+  justify-content: flex-end;
+}
+
+.feed-ai-btn {
+  background: var(--bg-input);
+  border: 1px solid var(--border-primary);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+  padding: 0;
+}
+
+.feed-ai-btn:hover {
+  background: var(--bg-hover);
+  color: var(--accent);
+  border-color: var(--accent-border);
+}
+
+.feed-ai-btn.active {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+
+/* Adjust bookmark for consistency */
+.feed-bookmark {
+  position: static; /* Remove absolute positioning */
+  opacity: 1 !important; /* Always show in actions bar */
+  background: var(--bg-input);
+  border: 1px solid var(--border-primary);
+}
+
+.feed-card:hover .feed-bookmark {
+  opacity: 1;
+}

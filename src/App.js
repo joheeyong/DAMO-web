@@ -18,6 +18,8 @@ import ProfilePage from './features/auth/pages/ProfilePage';
 import OnboardingInterestsPage from './features/auth/pages/OnboardingInterestsPage';
 import BlogEditorPage from './features/blog/pages/BlogEditorPage';
 import BlogDetailPage from './features/blog/pages/BlogDetailPage';
+import SocialComposePage from './features/social/pages/SocialComposePage';
+import SocialDetailPage from './features/social/pages/SocialDetailPage';
 import BottomNav from './components/BottomNav';
 import { fetchMe } from './features/auth/slice/authSlice';
 
@@ -54,6 +56,8 @@ function App() {
         <Route path="/blog/write" element={<BlogEditorPage />} />
         <Route path="/blog/edit/:id" element={<BlogEditorPage />} />
         <Route path="/blog/:id" element={<BlogDetailPage />} />
+        <Route path="/social/write" element={<SocialComposePage />} />
+        <Route path="/social/:id" element={<SocialDetailPage />} />
         <Route path="/auth/google/callback" element={<OAuthCallbackPage />} />
         <Route path="/auth/naver/callback" element={<NaverCallbackPage />} />
         <Route path="/auth/kakao/callback" element={<KakaoCallbackPage />} />

@@ -57,9 +57,13 @@ function FeedPage() {
     return () => observer.disconnect();
   }, [items.length]);
 
-  // Load more when near the end
+  // Load more when near the end (with cooldown to prevent rapid-fire)
+  const lastFetchTime = useRef(0);
   useEffect(() => {
     if (currentIndex >= items.length - 3 && items.length > 0 && !loading && !loadingMore && hasFetched) {
+      const now = Date.now();
+      if (now - lastFetchTime.current < 3000) return; // 3s cooldown
+      lastFetchTime.current = now;
       dispatch(fetchMoreTrending());
     }
   }, [currentIndex, items.length, loading, loadingMore, hasFetched, dispatch]);
@@ -131,6 +135,10 @@ function FeedSlide({ item, index, isActive, navigate }) {
     }
     if (item.platform === 'damo-blog') {
       navigate(`/blog/${item.extra?.blogPostId}`);
+      return;
+    }
+    if (item.platform === 'damo-feed') {
+      navigate(`/social/${item.extra?.socialPostId}`);
       return;
     }
     if (inApp) {

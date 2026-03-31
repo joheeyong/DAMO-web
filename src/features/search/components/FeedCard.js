@@ -114,6 +114,11 @@ function FeedCard({ item }) {
       navigate(`/blog/${item.extra?.blogPostId}`);
       return;
     }
+    // DAMO social feed: internal navigation
+    if (item.platform === 'damo-feed') {
+      navigate(`/social/${item.extra?.socialPostId}`);
+      return;
+    }
     if (inApp) {
       // URL 검증: http/https만 허용 (javascript:, data: 등 차단)
       try {
@@ -171,10 +176,13 @@ function FeedCard({ item }) {
                 <span>💬 {item.extra?.numComments?.toLocaleString()}</span>
               </div>
             )}
-            {item.platform === 'damo-blog' && (
+            {(item.platform === 'damo-blog' || item.platform === 'damo-feed') && (
               <div className="feed-reddit-stats">
                 <span>♥ {item.extra?.likeCount || 0}</span>
                 <span>💬 {item.extra?.commentCount || 0}</span>
+                {item.platform === 'damo-feed' && item.extra?.mediaCount > 1 && (
+                  <span>📷 {item.extra.mediaCount}</span>
+                )}
               </div>
             )}
             <div className="feed-meta">
@@ -224,10 +232,44 @@ function FeedCard({ item }) {
         </div>
       )}
 
-      <button className={`feed-bookmark ${bookmarked ? 'active' : ''}`} onClick={handleBookmark} aria-label="북마크">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill={bookmarked ? '#6366f1' : 'none'} stroke={bookmarked ? '#6366f1' : '#aeaeb2'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-        </svg>
+      {showSummary && (
+        <div className="feed-ai-summary" onClick={(e) => e.stopPropagation()}>
+          <div className="feed-ai-summary-header">
+            <span className="ai-sparkle">✨</span> AI 3줄 요약
+          </div>
+          <div className="feed-ai-summary-content">
+            {isSummarizing ? (
+              <div className="summary-loading">요약 중...</div>
+            ) : (
+              <pre className="summary-text">{summary}</pre>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div className="feed-card-actions">
+        <button 
+          className={`feed-ai-btn ${showSummary ? 'active' : ''}`} 
+          onClick={handleSummarize} 
+          title="AI 요약"
+        >
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 1 7.107 7.107c0 .13 0 .261 0 .393a7.5 7.5 0 0 1-7.107 7.107c-.13 0-.261 0-.393 0a7.5 7.5 0 0 1-7.107-7.107c0-.13 0-.261 0-.393A7.5 7.5 0 0 1 12 3z" />
+            <path d="M12 8v8M8 12h8" />
+          </svg>
+        </button>
+        <button className={`feed-bookmark ${bookmarked ? 'active' : ''}`} onClick={handleBookmark} aria-label="북마크">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill={bookmarked ? '#6366f1' : 'none'} stroke={bookmarked ? '#6366f1' : '#aeaeb2'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+          </svg>
+        </button>
+      </div>
+    </a>
+  );
+}
+
+export default FeedCard;
+vg>
       </button>
     </a>
   );

@@ -1,6 +1,7 @@
 export const FILTERS = [
   { key: 'all', label: '전체' },
   { key: 'damo-blog', label: 'DAMO 블로그' },
+  { key: 'damo-feed', label: 'DAMO 피드' },
   { key: 'shorts', label: 'Shorts' },
   { key: 'youtube', label: '유튜브' },
   { key: 'blog', label: 'N 블로그' },

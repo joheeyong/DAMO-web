@@ -6,6 +6,7 @@ import { FILTERS } from '../../../shared/constants/filters';
 import { analytics, logEvent } from '../../../core/firebase';
 import { searchApi } from '../api/searchApi';
 import FeedCard from '../components/FeedCard';
+import RecommendationSection from '../components/RecommendationSection';
 import './SearchPage.css';
 
 function HighlightText({ text, query }) {
@@ -157,18 +158,24 @@ function SearchPage() {
     }
   }, [pullDistance, refreshing, dispatch, PULL_THRESHOLD]);
 
+  const lastFetchTime = useRef(0);
+  // DAMO filters already show all DB data — no more to load
+  const isLocalFilter = activeFilter === 'damo-blog' || activeFilter === 'damo-feed';
   const lastItemRef = useCallback(
     (node) => {
-      if (loading || loadingMore || query) return;
+      if (loading || loadingMore || query || isLocalFilter) return;
       if (observerRef.current) observerRef.current.disconnect();
       observerRef.current = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting) {
+          const now = Date.now();
+          if (now - lastFetchTime.current < 3000) return; // 3s cooldown
+          lastFetchTime.current = now;
           dispatch(fetchMoreTrending());
         }
       });
       if (node) observerRef.current.observe(node);
     },
-    [loading, loadingMore, query, dispatch]
+    [loading, loadingMore, query, isLocalFilter, dispatch]
   );
 
   const saveToHistory = useCallback((term) => {
@@ -515,6 +522,10 @@ function SearchPage() {
           </div>
         )}
 
+        {!loading && !query && !searchMode && (
+          <RecommendationSection />
+        )}
+
         {!loading && !query && items.length > 0 && !searchMode && (
           <div className="trending-header">
             <h2>지금 뜨는 콘텐츠</h2>
@@ -569,12 +580,19 @@ function SearchPage() {
       </main>
 
       {token && (
-        <button className="fab-write" onClick={() => navigate('/blog/write')} aria-label="글쓰기">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-        </button>
+        <>
+          <button className="fab-write fab-social" onClick={() => navigate('/social/write')} aria-label="피드 작성">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+          </button>
+          <button className="fab-write" onClick={() => navigate('/blog/write')} aria-label="블로그 작성">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </button>
+        </>
       )}
     </div>
   );

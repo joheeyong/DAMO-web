@@ -16,4 +16,6 @@ export const activityApi = {
         sourceKeyword: i.sourceKeyword || '',
       })),
     }),
+
+  getRecommendations: () => apiClient.get('/api/activity/recommendations'),
 };

@@ -1,0 +1,304 @@
+.social-detail-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: #000;
+  color: #fff;
+}
+
+.social-detail-loading {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+
+.social-detail-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(255,255,255,0.15);
+  border-top-color: #6366f1;
+  border-radius: 50%;
+  animation: sd-spin 0.8s linear infinite;
+}
+
+@keyframes sd-spin { to { transform: rotate(360deg); } }
+
+.social-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  position: sticky;
+  top: 0;
+  background: #000;
+  z-index: 10;
+}
+
+.social-detail-back {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.social-detail-header-title {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.social-detail-body {
+  padding: 0 0 80px;
+}
+
+.social-detail-author {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+}
+
+.social-detail-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.social-detail-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.social-detail-avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  background: rgba(255,255,255,0.15);
+  border-radius: 50%;
+}
+
+.social-detail-author-info {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.social-detail-author-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.social-detail-time {
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.45);
+  margin-top: 2px;
+}
+
+.social-detail-delete {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.4);
+  cursor: pointer;
+  padding: 8px;
+}
+
+.social-detail-content {
+  padding: 0 16px 16px;
+}
+
+.social-detail-content p {
+  font-size: 1rem;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Gallery */
+.social-gallery {
+  margin-bottom: 12px;
+}
+
+.social-gallery-main {
+  width: 100%;
+  aspect-ratio: 1;
+  background: #111;
+}
+
+.social-gallery-media {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.social-gallery-dots {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px;
+}
+
+.social-gallery-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.25);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.2s;
+}
+
+.social-gallery-dot.active {
+  background: #6366f1;
+}
+
+/* Actions */
+.social-detail-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 16px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.social-like-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  padding: 8px 0;
+  font-size: 0.9rem;
+  transition: color 0.2s;
+}
+
+.social-like-btn.liked {
+  color: #ef4444;
+}
+
+/* Comments */
+.social-comments {
+  padding: 16px;
+}
+
+.social-comments-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: rgba(255,255,255,0.7);
+}
+
+.social-comments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.social-comment-item {
+  display: flex;
+  gap: 10px;
+}
+
+.social-comment-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.social-comment-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.social-comment-avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  background: rgba(255,255,255,0.12);
+  border-radius: 50%;
+}
+
+.social-comment-body {
+  flex: 1;
+}
+
+.social-comment-header {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+  margin-bottom: 2px;
+}
+
+.social-comment-author {
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.social-comment-time {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.35);
+}
+
+.social-comment-text {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: rgba(255,255,255,0.85);
+}
+
+.social-comment-delete {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.25);
+  cursor: pointer;
+  padding: 4px;
+  align-self: flex-start;
+}
+
+.social-comment-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+  position: sticky;
+  bottom: 0;
+  background: #000;
+  padding: 12px 0;
+}
+
+.social-comment-form input {
+  flex: 1;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 20px;
+  padding: 10px 16px;
+  color: #fff;
+  font-size: 0.9rem;
+  outline: none;
+}
+
+.social-comment-form input::placeholder {
+  color: rgba(255,255,255,0.3);
+}
+
+.social-comment-form button {
+  background: #6366f1;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 16px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.social-comment-form button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
