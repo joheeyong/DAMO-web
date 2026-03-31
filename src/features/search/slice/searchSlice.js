@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { searchApi } from '../api/searchApi';
 import { activityApi } from '../api/activityApi';
-import { stripHtml } from '../../../shared/utils/helpers';
+import { stripHtml, decodeText } from '../../../shared/utils/helpers';
 
 function upgradeKakaoThumbnail(url) {
   if (!url) return '';
@@ -29,8 +29,8 @@ function normalizeItems(rawResults) {
         items.push({
           id: `${category}-${videoId}`,
           platform: category,
-          title: snippet.title || '',
-          description: snippet.description || '',
+          title: decodeText(snippet.title || ''),
+          description: decodeText(snippet.description || ''),
           link: category === 'shorts'
             ? `https://www.youtube.com/shorts/${videoId}`
             : `https://www.youtube.com/watch?v=${videoId}`,
@@ -47,8 +47,8 @@ function normalizeItems(rawResults) {
         items.push({
           id: `instagram-${item.id}`,
           platform: 'instagram',
-          title: caption.substring(0, 80) || 'Instagram',
-          description: caption.substring(0, 200),
+          title: decodeText(caption.substring(0, 80) || 'Instagram'),
+          description: decodeText(caption.substring(0, 200)),
           link: item.permalink || '',
           image: item.media_type === 'VIDEO' ? (item.thumbnail_url || '') : (item.media_url || ''),
           author: '',
@@ -66,8 +66,8 @@ function normalizeItems(rawResults) {
         items.push({
           id: `${category}-${idx}-${doc.url}`,
           platform: category,
-          title: doc.title?.replace(/<[^>]*>/g, '') || '',
-          description: (doc.contents || doc.title || '').replace(/<[^>]*>/g, '').substring(0, 200),
+          title: decodeText(doc.title?.replace(/<[^>]*>/g, '') || ''),
+          description: decodeText((doc.contents || doc.title || '').replace(/<[^>]*>/g, '').substring(0, 200)),
           link: doc.url || '',
           image: upgradeKakaoThumbnail(doc.thumbnail_url || doc.thumbnail || ''),
           author: doc.blogname || doc.cafename || '',
@@ -87,8 +87,8 @@ function normalizeItems(rawResults) {
         items.push({
           id: `reddit-${post.id}`,
           platform: 'reddit',
-          title: post.title || '',
-          description: post.selftext?.substring(0, 200) || '',
+          title: decodeText(post.title || ''),
+          description: decodeText(post.selftext?.substring(0, 200) || ''),
           link: `https://www.reddit.com${post.permalink}`,
           image: thumbnail,
           author: post.author || '',
@@ -152,8 +152,8 @@ function normalizeItems(rawResults) {
         items.push({
           id: `${category}-${idx}-${item.link}`,
           platform: category,
-          title: stripHtml(item.title),
-          description: stripHtml(item.description),
+          title: decodeText(stripHtml(item.title)),
+          description: decodeText(stripHtml(item.description)),
           link: item.link || '',
           image: item.image || item.thumbnail || '',
           author: item.bloggername || item.cafename || item.mallName || item.author || item.publisher || '',

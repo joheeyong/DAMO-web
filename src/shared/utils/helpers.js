@@ -2,6 +2,15 @@ export function stripHtml(html) {
   return html?.replace(/<[^>]*>/g, '') || '';
 }
 
+export function decodeText(text) {
+  if (!text) return '';
+  try {
+    return decodeURIComponent(text);
+  } catch {
+    return text;
+  }
+}
+
 export function getVideoId(item) {
   if (item.platform === 'shorts') {
     return item.id.replace('shorts-', '');

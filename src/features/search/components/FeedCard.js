@@ -74,9 +74,10 @@ function VideoPreview({ item, isShorts }) {
 function FeedCard({ item }) {
   const navigate = useNavigate();
   const [bookmarked, setBookmarked] = useState(() => bookmarkApi.isBookmarked(item.id));
-  const [summary, setSummary] = useState('');
-  const [isSummarizing, setIsSummarizing] = useState(false);
-  const [showSummary, setShowSummary] = useState(false);
+  // TODO: AI 요약 기능 - API 키 설정 후 주석 해제
+  // const [summary, setSummary] = useState('');
+  // const [isSummarizing, setIsSummarizing] = useState(false);
+  // const [showSummary, setShowSummary] = useState(false);
 
   const platform = PLATFORM_LABELS[item.platform] || { label: item.platform, color: '#6b7280' };
   const isYoutube = item.platform === 'youtube';
@@ -89,47 +90,35 @@ function FeedCard({ item }) {
 
   const inApp = isFlutterApp();
 
-  const handleSummarize = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (showSummary) {
-      setShowSummary(false);
-      return;
-    }
-
-    if (summary) {
-      setShowSummary(true);
-      return;
-    }
-
-    setIsSummarizing(true);
-    setShowSummary(true);
-
-    try {
-      const response = await fetch('/api/ai/summarize', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
-        },
-        body: JSON.stringify({
-          content: `${item.title}. ${item.description || ''}`
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setSummary(data.summary);
-      } else {
-        setSummary('요약을 가져오지 못했습니다.');
-      }
-    } catch (error) {
-      setSummary('서버 연결 오류가 발생했습니다.');
-    } finally {
-      setIsSummarizing(false);
-    }
-  };
+  // TODO: AI 요약 기능 - API 키 설정 후 주석 해제
+  // const handleSummarize = async (e) => {
+  //   e.preventDefault();
+  //   e.stopPropagation();
+  //   if (showSummary) { setShowSummary(false); return; }
+  //   if (summary) { setShowSummary(true); return; }
+  //   setIsSummarizing(true);
+  //   setShowSummary(true);
+  //   try {
+  //     const response = await fetch('/api/ai/summarize', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'Authorization': `Bearer ${localStorage.getItem('auth_token')}`
+  //       },
+  //       body: JSON.stringify({ content: `${item.title}. ${item.description || ''}` })
+  //     });
+  //     if (response.ok) {
+  //       const data = await response.json();
+  //       setSummary(data.summary);
+  //     } else {
+  //       setSummary('요약을 가져오지 못했습니다.');
+  //     }
+  //   } catch (error) {
+  //     setSummary('서버 연결 오류가 발생했습니다.');
+  //   } finally {
+  //     setIsSummarizing(false);
+  //   }
+  // };
 
   const handleBookmark = (e) => {
     e.preventDefault();
@@ -248,6 +237,7 @@ function FeedCard({ item }) {
         </div>
       )}
 
+      {/* TODO: AI 요약 기능 - API 키 설정 후 주석 해제
       {showSummary && (
         <div className="feed-ai-summary" onClick={(e) => e.stopPropagation()}>
           <div className="feed-ai-summary-header">
@@ -258,14 +248,17 @@ function FeedCard({ item }) {
           </div>
         </div>
       )}
+      */}
 
       <div className="feed-card-actions">
+        {/* TODO: AI 요약 버튼 - API 키 설정 후 주석 해제
         <button className={`feed-ai-btn ${showSummary ? 'active' : ''}`} onClick={handleSummarize} title="AI 요약">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 1 7.107 7.107c0 .13 0 .261 0 .393a7.5 7.5 0 0 1-7.107 7.107c-.13 0-.261 0-.393 0a7.5 7.5 0 0 1-7.107-7.107c0-.13 0-.261 0-.393A7.5 7.5 0 0 1 12 3z" />
             <path d="M12 8v8M8 12h8" />
           </svg>
         </button>
+        */}
         <button className={`feed-bookmark ${bookmarked ? 'active' : ''}`} onClick={handleBookmark} aria-label="북마크">
           <svg width="18" height="18" viewBox="0 0 24 24" fill={bookmarked ? '#6366f1' : 'none'} stroke={bookmarked ? '#6366f1' : '#aeaeb2'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
